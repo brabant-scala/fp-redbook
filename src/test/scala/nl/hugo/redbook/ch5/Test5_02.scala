@@ -29,11 +29,11 @@ class Test5_02 extends WordSpec with Matchers {
     }
 
     "return Empty with four elements dropped" in {
-      Stream(1, 2, 3, 4).drop(4).toList should be(Empty)
+      Stream(1, 2, 3, 4).drop(4).toList should be(List.empty)
     }
 
     "return Empty with five elements dropped" in {
-      Stream(1, 2, 3, 4).drop(5).toList should be(Empty)
+      Stream(1, 2, 3, 4).drop(5).toList should be(List.empty)
     }
   }
 
