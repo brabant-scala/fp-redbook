@@ -24,7 +24,7 @@ object Tree {
 
   // exercise 3.29
   def depth[A](t: Tree[A]): Int =
-    fold(t)(_ => 1)((l: Int, r: Int) => 1 + (l max r))
+    fold(t)(_ => 0)((l: Int, r: Int) => 1 + (l max r))
 
   // exercise 3.29
   def map[A, B](t: Tree[A])(f: A => B): Tree[B] =
