@@ -16,7 +16,7 @@ class Test3_27 extends WordSpec with Matchers {
     }
 
     "return the depth of a tree with one element" in {
-      depth(Leaf(42)) should be(2)
+      depth(Leaf(42)) should be(0)
     }
   }
 }
