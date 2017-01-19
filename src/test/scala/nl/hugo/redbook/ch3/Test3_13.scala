@@ -4,7 +4,7 @@ import org.scalatest._
 
 class Test3_13 extends WordSpec with Matchers {
 
-  import List.{foldLeft, foldRight}
+  import List.{ foldLeft, foldRight }
 
   "foldRight" should {
 
