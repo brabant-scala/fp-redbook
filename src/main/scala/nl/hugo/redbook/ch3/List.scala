@@ -79,23 +79,29 @@ object List {
   def appendL[A](l: List[A], r: List[A]): List[A] = foldLeft(reverse(l), r)((result, current) => Cons(current, result))
 
   // exercise 3.18
-  def map[A, B](as: List[A])(f: A => B): List[B] = as match {
+  def map1[A, B](as: List[A])(f: A => B): List[B] = as match {
     case Nil         => Nil
     case Cons(x, xs) => Cons(f(x), map(xs)(f))
   }
+  // TODO Can also write this as foldRight
+  def map[A, B](as: List[A])(f: A => B): List[B] = List.foldRight(as, Nil: List[B])((i,a) => Cons(f(i), a))
 
   // exercise 3.19
-  def filter[A](as: List[A])(p: A => Boolean): List[A] = as match {
+  def filter1[A](as: List[A])(p: A => Boolean): List[A] = as match {
     case Nil                 => Nil
     case Cons(x, xs) if p(x) => Cons(x, filter(xs)(p))
     case Cons(_, xs)         => filter(xs)(p)
   }
+  // TODO Can also write this as foldRight
+  def filter[A](as: List[A])(p: A => Boolean): List[A] = List.foldRight(as, Nil: List[A])((i,a) => if (p(i)) Cons(i, a) else a)
 
   // exercise 3.20
-  def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] = as match {
+  def flatMap1[A, B](as: List[A])(f: A => List[B]): List[B] = as match {
     case Nil         => Nil
     case Cons(x, xs) => append(f(x), flatMap(xs)(f))
   }
+  // TODO Can also use flatAppend and map
+  def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] = List.foldRight(as, Nil: List[B])((i,a) => List.append(f(i), a))
 
   // exercise 3.23
   def zipWith[A, B, C](as: List[A], bs: List[B])(f: (A, B) => C): List[C] = (as, bs) match {
