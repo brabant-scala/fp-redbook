@@ -13,13 +13,13 @@ object Tree {
   }
 
   // exercise 3.29
-  def size[A](t: Tree[A]): Int = fold(t)(_ => 1)(_ + _)
+  def size[A](t: Tree[A]): Int = fold(t)(_ => 1)(_ + _ + 1)
 
   // exercise 3.29
   def maximum(t: Tree[Int]): Int = fold(t)(v => v)(_ max _)
 
   // exercise 3.29
-  def depth[A](t: Tree[A]): Int = fold(t)(_ => 1)((l,r) => (l max r) + 1)
+  def depth[A](t: Tree[A]): Int = fold(t)(_ => 0)((l,r) => (l max r) + 1)
 
   // exercise 3.29
   def map[A, B](t: Tree[A])(f: A => B): Tree[B] = fold(t)(v => Leaf(f(v)): Tree[B])(Branch(_,_))

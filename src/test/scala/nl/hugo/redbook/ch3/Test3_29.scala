@@ -7,8 +7,8 @@ class Test3_29 extends WordSpec with Matchers {
 
   "size" should {
 
-    "return the number of leafs in a non-empty tree" in {
-      Tree.size(Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Leaf(4)))) should be(4)
+    "return the number of leafs and branches in a non-empty tree" in {
+      Tree.size(Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Leaf(4)))) should be(7)
     }
 
     "return 1 for a tree with one element" in {
@@ -34,15 +34,15 @@ class Test3_29 extends WordSpec with Matchers {
   "depth" should {
 
     "return the maximum depth of all paths of a non-empty tree (left case)" in {
-      depth(Branch(Branch(Leaf(1), Leaf(2)), Leaf(3))) should be(3)
+      depth(Branch(Branch(Leaf(1), Leaf(2)), Leaf(3))) should be(2)
     }
 
     "return the maximum depths of all paths of a non-empty tree (right case)" in {
-      depth(Branch(Leaf(3), Branch(Leaf(2), Leaf(1)))) should be(3)
+      depth(Branch(Leaf(3), Branch(Leaf(2), Leaf(1)))) should be(2)
     }
 
     "return the depth of a tree with one element" in {
-      depth(Leaf(42)) should be(1)
+      depth(Leaf(42)) should be(0)
     }
   }
 
