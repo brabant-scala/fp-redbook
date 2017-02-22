@@ -32,7 +32,7 @@ trait Stream[+A] {
       case Empty => Empty
       case Cons(h, t) =>
         if (n == 0) Empty
-        else Cons(h, () => take(n - 1))
+        else Cons(h, () => t().take(n - 1))
     }
 
   // Exercise 5.02
