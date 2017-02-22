@@ -74,7 +74,11 @@ trait Stream[+A] {
     }
 
   // Exercise 5.04
-  def forAll(p: A => Boolean): Boolean = ???
+  def forAll(p: A => Boolean): Boolean =
+    this match {
+      case Empty => true
+      case Cons(h, t) => (p(h())) && t().forAll(p)
+    }
 
   // Exercise 5.05
   def takeWhileViaFoldRight(p: A => Boolean): Stream[A] = ???
