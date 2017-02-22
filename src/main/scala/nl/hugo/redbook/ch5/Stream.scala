@@ -20,16 +20,58 @@ trait Stream[+A] {
   }
 
   // Exercise 5.01
-  def toList: List[A] = ???
+  def toList: List[A] =
+    this match {
+      case Empty => Nil
+      case Cons(h, t) => h() :: t().toList
+    }
 
   // Exercise 5.02
-  def take(n: Int): Stream[A] = ???
+  def take(n: Int): Stream[A] =
+    this match {
+      case Empty => Empty
+      case Cons(h, t) =>
+        if (n == 0) Empty
+        else Cons(h, () => take(n - 1))
+    }
 
   // Exercise 5.02
-  def drop(n: Int): Stream[A] = ???
+  def drop(n: Int): Stream[A] =
+    drop_1(n)
+
+  def drop_1(n: Int): Stream[A] =
+    this match {
+      case Empty => Empty
+      case Cons(_, t) =>
+        if (n == 0) this
+        else t().drop_1(n - 1)
+    }
+
+  def drop_2(n: Int): Stream[A] =
+    if (n == 0) this
+    else this match {
+      case Empty => Empty
+      case Cons(_, t) => t().drop_2(n - 1)
+    }
 
   // Exercise 5.03
-  def takeWhile(p: A => Boolean): Stream[A] = ???
+  def takeWhile(p: A => Boolean): Stream[A] =
+    takeWhile_1(p)
+
+  def takeWhile_1(p: A => Boolean): Stream[A] =
+    this match {
+      case Cons(h, t) if p(h()) => Cons(h, () => t().takeWhile_1(p))
+      case _ => Empty
+    }
+
+  def takeWhile_2(p: A => Boolean): Stream[A] =
+    this match {
+      case Empty => Empty
+      case Cons(h, t) =>
+        val a = h()
+        if (p(a)) Cons(() => a, () => t().takeWhile_2(p))
+        else Empty
+    }
 
   // Exercise 5.04
   def forAll(p: A => Boolean): Boolean = ???
@@ -38,7 +80,11 @@ trait Stream[+A] {
   def takeWhileViaFoldRight(p: A => Boolean): Stream[A] = ???
 
   // Exercise 5.06
-  def headOption: Option[A] = ???
+  def headOption: Option[A] =
+    this match {
+      case Empty => None
+      case Cons(h, t) => Some(h())
+    }
 
   // Exercise 5.7
   def map[B](f: A => B): Stream[B] = ???
