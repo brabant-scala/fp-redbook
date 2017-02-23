@@ -124,11 +124,14 @@ trait Stream[+A] {
     } append Stream(empty)
 
   // Exercise 5.16
-  def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] =
-    unfold(this) {
-      case Empty => None
-      case s => Some((s.foldRight(z)(f), s.drop(1)))
-    } append Stream(z)
+  def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] = {
+    case class State(acc: B, results: Stream[B])
+    foldRight(State(z, Stream(z)))((input, state) => {
+      val ns = f(input, state.acc)
+      State(ns, cons(ns, state.results))
+    }
+    ).results
+  }
 }
 
 case object Empty extends Stream[Nothing]
