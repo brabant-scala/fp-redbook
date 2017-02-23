@@ -20,37 +20,66 @@ trait Stream[+A] {
   }
 
   // Exercise 5.01
-  def toList: List[A] = ???
+  def toList: List[A] = foldRight(List.empty[A])((h,t) => h +: t)
 
   // Exercise 5.02
-  def take(n: Int): Stream[A] = ???
+  def take(n: Int): Stream[A] = this match {
+    case Cons(h,t) if n > 0 => cons(h(), t().take(n-1))
+    case _ => empty
+  }
 
   // Exercise 5.02
-  def drop(n: Int): Stream[A] = ???
+  def drop(n: Int): Stream[A] = this match {
+    case Cons(h,t) if n > 0 => t().drop(n - 1)
+    case Cons(h,t) => this
+    case Empty => empty
+  }
 
   // Exercise 5.03
-  def takeWhile(p: A => Boolean): Stream[A] = ???
+  def takeWhile(p: A => Boolean): Stream[A] = this match {
+    case Cons(h,t) if p(h()) => cons(h(), t().takeWhile(p))
+    case _ => empty
+  }
 
   // Exercise 5.04
-  def forAll(p: A => Boolean): Boolean = ???
+  def forAll(p: A => Boolean): Boolean = foldRight(true)((a,r) => r && p(a))
 
   // Exercise 5.05
-  def takeWhileViaFoldRight(p: A => Boolean): Stream[A] = ???
+  def takeWhileViaFoldRight(p: A => Boolean): Stream[A] =
+    foldRight((true, empty): (Boolean, Stream[A]))((a,r) =>
+      (r._1 && p(a), if (r._1 && p(a)) cons(a, r._2) else r._2)
+    )._2
 
   // Exercise 5.06
-  def headOption: Option[A] = ???
+  def headOption: Option[A] = this match {
+    case Cons(h,t) => Option(h())
+    case _ => None
+  }
 
   // Exercise 5.7
-  def map[B](f: A => B): Stream[B] = ???
+  def map[B](f: A => B): Stream[B] = this match {
+    case Cons(h,t) => cons(f(h()), t().map(f))
+    case Empty => empty
+  }
 
   // Exercise 5.7
-  def filter(p: A => Boolean): Stream[A] = ???
+  def filter(p: A => Boolean): Stream[A] = this match {
+    case Cons(h,t) if p(h()) => cons(h(), t().filter(p))
+    case Cons(_,t) => t().filter(p)
+    case Empty => empty
+  }
 
   // Exercise 5.7
-  def append[B >: A](l: => Stream[B]): Stream[B] = ???
+  def append[B >: A](l: => Stream[B]): Stream[B] = this match {
+    case Cons(h,t) => cons(h(), t().append(l))
+    case Empty => l
+  }
 
   // Exercise 5.7
-  def flatMap[B](f: A => Stream[B]): Stream[B] = ???
+  def flatMap[B](f: A => Stream[B]): Stream[B] = this match {
+    case Cons(h,t) => f(h()).append(t().flatMap(f))
+    case Empty => empty
+  }
 
   // Exercise 5.13
   def mapViaUnfold[B](f: A => B): Stream[B] = ???
@@ -97,13 +126,16 @@ object Stream {
   val ones: Stream[Int] = Stream.cons(1, ones)
 
   // Exercise 5.8
-  def constant[A](a: A): Stream[A] = ???
+  def constant[A](a: A): Stream[A] = cons(a, constant(a))
 
   // Exercise 5.9
-  def from(n: Int): Stream[Int] = ???
+  def from(n: Int): Stream[Int] = cons(n, from(n+1))
 
   // Exercise 5.10
-  def fibs: Stream[Int] = ???
+  def fibs: Stream[Int] = {
+    def next(p: Int, c: Int): Stream[Int] = cons(p+c, next(c, p+c))
+    cons(0, cons(1, next(0, 1)))
+  }
 
   // Exercise 5.11
   def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = ???
