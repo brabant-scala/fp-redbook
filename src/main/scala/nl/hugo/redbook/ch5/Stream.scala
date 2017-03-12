@@ -29,26 +29,32 @@ trait Stream[+A] {
   }
 
   // Exercise 5.02
+//  def drop(n: Int): Stream[A] = this match {
+//    case Cons(h,t) if n > 0 => t().drop(n - 1)
+//    case Cons(h,t) => this
+//    case Empty => empty
+//  }
   def drop(n: Int): Stream[A] = this match {
     case Cons(h,t) if n > 0 => t().drop(n - 1)
-    case Cons(h,t) => this
-    case Empty => empty
+    case _ => this
   }
 
   // Exercise 5.03
   def takeWhile(p: A => Boolean): Stream[A] = this match {
-    case Cons(h,t) if p(h()) => cons(h(), t().takeWhile(p))
+    case Cons(h,t) if p(h()) => cons(h(), t().takeWhile(p)) // Evalueert nu wel 2x functie h(), zou je "moeten" cachen in een val voor snelheid
     case _ => empty
   }
 
   // Exercise 5.04
-  def forAll(p: A => Boolean): Boolean = foldRight(true)((a,r) => r && p(a))
+//  def forAll(p: A => Boolean): Boolean = foldRight(true)((a,r) => r && p(a)) // is niet goed. moet hem omdraaien
+  def forAll(p: A => Boolean): Boolean = foldRight(true)((a,r) => p(a) && r)  // let op : r is het passed by name dus moet rechts
 
   // Exercise 5.05
   def takeWhileViaFoldRight(p: A => Boolean): Stream[A] =
-    foldRight((true, empty): (Boolean, Stream[A]))((a,r) =>
-      (r._1 && p(a), if (r._1 && p(a)) cons(a, r._2) else r._2)
-    )._2
+//    foldRight((true, empty): (Boolean, Stream[A]))((a,r) =>
+//      (r._1 && p(a), if (r._1 && p(a)) cons(a, r._2) else r._2)
+//    )._2
+    foldRight(empty:Stream[A])((a,b)=> if (p(a)) cons(a,b) else empty)
 
   // Exercise 5.06
   def headOption: Option[A] = this match {
@@ -61,6 +67,7 @@ trait Stream[+A] {
     case Cons(h,t) => cons(f(h()), t().map(f))
     case Empty => empty
   }
+// probeer deze opgaves (5.7) ook eens met foldRight
 
   // Exercise 5.7
   def filter(p: A => Boolean): Stream[A] = this match {
