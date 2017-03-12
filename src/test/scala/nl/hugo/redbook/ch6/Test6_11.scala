@@ -3,13 +3,14 @@ package nl.hugo.redbook.ch6
 import org.scalatest._
 
 class Test6_11 extends WordSpec with Matchers {
-  "A candymachine" should {
+  "A candy machine" should {
     "unlock a candy when inserting a coin and turning the knob" in {
       State.simulateMachine(List(Coin, Turn)).run(Machine(locked = true, 5, 0))._1 should be((1, 4))
     }
 
     "unlock a candy when turning the knob on an unlocked machine" in {
       State.simulateMachine(List(Turn)).run(Machine(locked = false, 5, 0))._1 should be((1, 4))
+      // DISCUSS: I think it should be (0,4)
     }
 
     "do nothing when turning the knob on a locked machine" in {

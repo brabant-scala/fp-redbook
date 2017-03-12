@@ -12,24 +12,28 @@ class Test6_03 extends WordSpec with Matchers {
       val mock = RNGMock(1234, RNGMock(5678, rng))
 
       RNG.intDouble(mock)._1 should be((1234, toDouble(5678)))
+      RNG.randIntDouble(mock)._1 should be((1234, toDouble(5678)))
     }
 
     "convert zeros to zeros" in {
       val mock = RNGMock(0, RNGMock(0, rng))
 
       RNG.intDouble(mock)._1 should be((0, 0.0))
+      RNG.randIntDouble(mock)._1 should be((0, 0.0))
     }
 
     "return a negative integer value" in {
       val mock = RNGMock(-100, RNGMock(0, rng))
 
       RNG.intDouble(mock)._1 should be((-100, 0.0))
+      RNG.randIntDouble(mock)._1 should be((-100, 0.0))
     }
 
     "return the next RNG object" in {
       val mock = RNGMock(0, RNGMock(1, rng))
 
       RNG.intDouble(mock)._2 should be(rng)
+      RNG.randIntDouble(mock)._2 should be(rng)
     }
   }
 
@@ -38,24 +42,28 @@ class Test6_03 extends WordSpec with Matchers {
       val mock = RNGMock(1234, RNGMock(5678, rng))
 
       RNG.doubleInt(mock)._1 should be((toDouble(1234), 5678))
+      RNG.randDoubleInt(mock)._1 should be((toDouble(1234), 5678))
     }
 
     "convert zeros to zeros" in {
       val mock = RNGMock(0, RNGMock(0, rng))
 
       RNG.doubleInt(mock)._1 should be((0.0, 0))
+      RNG.randDoubleInt(mock)._1 should be((0.0, 0))
     }
 
     "return a negative integer value" in {
       val mock = RNGMock(0, RNGMock(-100, rng))
 
       RNG.doubleInt(mock)._1 should be((0.0, -100))
+      RNG.randDoubleInt(mock)._1 should be((0.0, -100))
     }
 
     "return the next RNG object" in {
       val mock = RNGMock(0, RNGMock(1, rng))
 
       RNG.doubleInt(mock)._2 should be(rng)
+      RNG.randDoubleInt(mock)._2 should be(rng)
     }
   }
 
