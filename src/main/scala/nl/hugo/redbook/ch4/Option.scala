@@ -31,7 +31,13 @@ sealed trait Option[+A] {
 
   // Exercise 4.01
   def filter(f: A => Boolean): Option[A] =
+    filter_1(f)
+
+  def filter_1(f: A => Boolean): Option[A] =
     if (map(f).getOrElse(false)) this else None
+
+  def filter_2(f: A => Boolean): Option[A] =
+    flatMap(a => if (f(a)) Some(a) else None)
 }
 
 case class Some[+A](get: A) extends Option[A] {
@@ -70,9 +76,18 @@ object Option {
 
   // Exercise 4.02
   def variance(xs: Seq[Double]): Option[Double] =
+    variance_1(xs)
+
+  def variance_1(xs: Seq[Double]): Option[Double] =
     mean(xs).flatMap { m =>
       mean(xs.map(x => math.pow(x - m, 2)))
     }
+
+  def variance_2(xs: Seq[Double]): Option[Double] =
+    for {
+      m <- mean(xs)
+      v <- mean(xs.map(x => math.pow(x - m, 2)))
+    } yield v
 
   // Exercise 4.03
   def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
@@ -103,8 +118,10 @@ object Option {
   def sequence_2[A](as: List[Option[A]]): Option[List[A]] =
     as match {
       case Nil => Some(Nil)
-      case a :: tail => map2(a, sequence(tail))(_ :: _)
+      case a :: tail => map2(a, sequence_2(tail))(_ :: _)
     }
+
+  // TODO: write more efficient solution with short circuit
 
   // Exercise 4.05
   def traverse[A, B](as: List[A])(f: A => Option[B]): Option[List[B]] =
@@ -119,7 +136,9 @@ object Option {
       case a :: tail => map2(f(a), traverse(tail)(f))(_ :: _)
     }
 
+  // TODO: write more efficient solution with short circuit
+
   // Exercise 4.05
   def sequence_via_traverse[A](as: List[Option[A]]): Option[List[A]] =
-    traverse(as)(a => a)
+    traverse(as)(identity)
 }

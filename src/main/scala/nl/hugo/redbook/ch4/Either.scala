@@ -23,7 +23,7 @@ sealed trait Either[+E, +A] {
   // Exercise 4.06
   def orElse[EE >: E, B >: A](b: => Either[EE, B]): Either[EE, B] /*=
     this match {
-      case l: Left[E] => b
+      case Left[E](b) => b
       case r => r
     }
     */
@@ -31,6 +31,7 @@ sealed trait Either[+E, +A] {
   // Exercise 4.06
   def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] /*=
     flatMap(aa => b.map(bb => f(aa, bb)))
+    // or: for (aa <- a; bb <- a) yield f(aa, bb)
     */
 }
 
@@ -54,7 +55,9 @@ object Either {
     traverse_1(as)(f)
 
   def traverse_1[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
-    as.foldRight[Either[E, List[B]]](Right(Nil))((x, xs) => f(x).map2(xs)(_ :: _))
+    as.foldRight[Either[E, List[B]]](Right(Nil)) { (x, xs) =>
+      f(x).map2(xs)(_ :: _)
+    }
 
   def traverse_2[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
     as match {
@@ -64,7 +67,7 @@ object Either {
 
   // Exercise 4.07
   def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] =
-    traverse(es)(e => e)
+    traverse(es)(identity)
 
   def mean(xs: IndexedSeq[Double]): Either[String, Double] =
     if (xs.isEmpty)

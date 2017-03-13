@@ -1,23 +1,19 @@
 package nl.hugo.redbook.ch6
 
-import org.scalatest._
+import nl.hugo.redbook.Spec
 
-class Test6_06 extends WordSpec with Matchers {
-  val rng = RNG.Simple(0)
+class Test6_06 extends Spec {
 
-  "RNG.map2" should {
-    "apply the function f" in {
-      val l = RNG.unit(1234)
-      val r = RNG.unit(5678)
+  implicit val last = CNG.zero
 
-      RNG.map2(l, r)(_ + _)(rng) should be((1234 + 5678, rng))
-    }
+  "map2" should {
 
-    "progress the RNG object" in {
-      val (_, rng2) = rng.nextInt
-      val (_, rng3) = rng2.nextInt
-
-      RNG.map2(RNG.doubleViaMap, RNG.doubleViaMap)(_ + _)(rng)._2 should be(rng3)
+    "combine two actions into one action" in {
+      val rng = CNG(6, 7)
+      val rand = RNG.map2(RNG.int, RNG.int)(_ * _)
+      val (n, r) = rand(rng)
+      n should be(42)
+      r should be(last)
     }
   }
 }
