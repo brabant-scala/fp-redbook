@@ -15,10 +15,13 @@ class Test3_02 extends WordSpec with Matchers {
       tail(List(42)) should be(Nil)
     }
 
-    "throw an exception for an empty list" in {
-      intercept[Exception] {
-        tail(Nil)
-      }
+    "return Nil for empty list" in {
+      tail(Nil) should be(Nil)
     }
+
+//    "throw an exception for an empty list" in {
+//      intercept[Exception] {
+//      }
+//    }
   }
 }

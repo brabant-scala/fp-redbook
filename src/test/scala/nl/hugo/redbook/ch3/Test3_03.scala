@@ -15,10 +15,14 @@ class Test3_03 extends WordSpec with Matchers {
       setHead(List(7), 42) should be(List(42))
     }
 
-    "throw an exception for an empty list" in {
-      intercept[Exception] {
-        setHead(Nil, 13)
-      }
+    "change the head of an empty list" in {
+      setHead(Nil, 42) should be(Nil)
     }
+
+//    "throw an exception for an empty list" in {
+//      intercept[Exception] {
+//        setHead(Nil, 13)
+//      }
+//    }
   }
 }
