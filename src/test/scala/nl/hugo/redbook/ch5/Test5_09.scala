@@ -1,15 +1,10 @@
 package nl.hugo.redbook.ch5
 
-import org.scalatest._
+import nl.hugo.redbook.ch5.spec.FromSpec
 
-class Test5_09 extends WordSpec with Matchers {
-  "Stream" should {
-    "from(10) should return incremental values" in {
-      Stream.from(10).take(5).toList should be(List(10, 11, 12, 13, 14))
-    }
+class Test5_09 extends FromSpec {
 
-    "from(-5) should return incremental values" in {
-      Stream.from(-5).take(3).toList should be(List(-5, -4, -3))
-    }
-  }
+  override def from = Stream.from
+
+  fromTest("from")
 }

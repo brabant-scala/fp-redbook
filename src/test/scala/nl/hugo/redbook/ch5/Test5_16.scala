@@ -1,11 +1,10 @@
 package nl.hugo.redbook.ch5
 
-import org.scalatest._
+import nl.hugo.redbook.ch5.spec.ScanRightSpec
 
-class Test5_16 extends WordSpec with Matchers {
-  "Stream" should {
-    "scanright over the stream and add all the numbers in the tails" in {
-      Stream(1, 2, 3).scanRight(0)(_ + _).toList should be(List(6, 5, 3, 0))
-    }
-  }
+class Test5_16 extends ScanRightSpec {
+
+  override def scanRight[A, B](s: Stream[A]) = s.scanRight
+
+  scanRightTest("scanRight")
 }

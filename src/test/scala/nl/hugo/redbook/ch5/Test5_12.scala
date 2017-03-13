@@ -1,26 +1,21 @@
 package nl.hugo.redbook.ch5
 
-import org.scalatest._
+import nl.hugo.redbook.ch5.spec._
 
-class Test5_12 extends WordSpec with Matchers {
-  "Stream" should {
-    "generate fibonacci numbers" in {
-      Stream.fibsViaUnfold.take(7).toList should be(List(0, 1, 1, 2, 3, 5, 8))
-    }
-    "fromViaUnfold(10) should return incremental values" in {
-      Stream.fromViaUnfold(10).take(5).toList should be(List(10, 11, 12, 13, 14))
-    }
+class Test5_12 extends FibsSpec with FromSpec with ConstantSpec {
 
-    "from(-5) should return incremental values" in {
-      Stream.fromViaUnfold(-5).take(3).toList should be(List(-5, -4, -3))
-    }
+  override def fibs = Stream.fibsViaUnfold
+  override def from = Stream.fromViaUnfold
+  override def constant[A] = Stream.constantViaUnfold
 
-    "return the constant value" in {
-      Stream.constantViaUnfold(5).take(10).toList should be(List(5, 5, 5, 5, 5, 5, 5, 5, 5, 5))
-    }
+  fibsTest("fibs (via unfold)")
+  fromTest("from (via unfold)")
+  constantTest("constant (via unfold)")
 
-    "return ones using onesViaUnfold" in {
-      Stream.onesViaUnfold.take(3).toList should be(List(1, 1, 1))
+  "ones" should {
+
+    "return an infinite stream with the same constant" in {
+      Stream.onesViaUnfold.take(7).toList should be(List(1, 1, 1, 1, 1, 1, 1))
     }
   }
 }
