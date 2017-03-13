@@ -67,7 +67,7 @@ object RNG {
 
   // Exercise 6.04
   def ints(count: Int)(rng: RNG): (List[Int], RNG) =
-    ints_1(count)(rng)
+    ints_3(count)(rng)
 
   // ints - imperative
   def ints_1(count: Int)(rng: RNG): (List[Int], RNG) = {
