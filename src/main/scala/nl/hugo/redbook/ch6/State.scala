@@ -69,7 +69,7 @@ object RNG {
   def ints(count: Int)(rng: RNG): (List[Int], RNG) =
     ints_1(count)(rng)
 
-  // ints using for-loop
+  // ints - imperative
   def ints_1(count: Int)(rng: RNG): (List[Int], RNG) = {
     var is: List[Int] = Nil
     var r = rng
@@ -81,7 +81,7 @@ object RNG {
     (is, r)
   }
 
-  // ints using (non tail-recursive) recursion
+  // ints - (non tail-) recursive
   def ints_2(count: Int)(rng: RNG): (List[Int], RNG) =
     if (count <= 0) (Nil, rng)
     else {
@@ -89,6 +89,19 @@ object RNG {
       val (tail, r2) = ints_2(count - 1)(r1)
       (head :: tail, r2)
     }
+
+  // ints - tail-recursive
+  def ints_3(count: Int)(rng: RNG): (List[Int], RNG) = {
+
+    def go(c: Int, acc: List[Int])(r: RNG): (List[Int], RNG) =
+      if (c <= 0) (acc, r)
+      else {
+        val (i, r1) = nonNegativeInt(r)
+        go(c - 1, i :: acc)(r1)
+      }
+
+    go(count, Nil)(rng)
+  }
 
   // Exercise 6.05
   def doubleViaMap: Rand[Double] =
