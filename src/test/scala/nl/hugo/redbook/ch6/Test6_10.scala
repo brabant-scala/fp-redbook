@@ -46,7 +46,7 @@ class Test6_10 extends Spec {
     }
 
     "combine two actions into one (companion)" in {
-      val rand = map2(rand1, rand2)(_ * _)
+      val rand = rand1.map2(rand2)(_ * _)
 
       val rng = CNG(6, 7)
       val (n, r) = rand.run(rng)

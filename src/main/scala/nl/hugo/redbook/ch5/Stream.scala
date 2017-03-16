@@ -115,7 +115,7 @@ object Stream {
   def fromViaUnfold(n: Int): Stream[Int] = ???
 
   // Exercise 5.12
-  def constantViaUnfold(n: Int): Stream[Int] = ???
+  def constantViaUnfold[A](a: A): Stream[A] = ???
 
   // Exercise 5.12
   def onesViaUnfold: Stream[Int] = ???
