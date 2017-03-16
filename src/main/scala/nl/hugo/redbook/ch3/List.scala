@@ -68,7 +68,6 @@ object List {
     case Cons(b, bs) => foldLeft(bs, f(z, b))(f)
   }
 
-
   // exercise 3.12
   def reverse[A](as: List[A]): List[A] = {
 
@@ -95,15 +94,15 @@ object List {
     case Nil => Nil
   }
 
-  def filter[A](as: List[A])(p: A => Boolean): List[A] = as match{
-    case Cons(b,bs) if(p(b)) => Cons(b, filter(bs)(p))
-    case Cons(b,bs) => filter(bs)(p)
+  def filter[A](as: List[A])(p: A => Boolean): List[A] = as match {
+    case Cons(b, bs) if (p(b)) => Cons(b, filter(bs)(p))
+    case Cons(b, bs) => filter(bs)(p)
     case Nil => Nil
   }
 
   // exercise 3.20
-  def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] = as match{
-    case Cons(b,bs) => append(f(b), flatMap(bs)(f))
+  def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] = as match {
+    case Cons(b, bs) => append(f(b), flatMap(bs)(f))
     case Nil => List[B]()
   }
 

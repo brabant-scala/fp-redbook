@@ -8,6 +8,5 @@ object Exercise21 {
       List(a)
     } else {
       List[A]()
-    }
-  )
+    })
 }

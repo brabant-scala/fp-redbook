@@ -14,6 +14,6 @@ object Exercise15 {
 
      en voeg toe aan resultaat
     */
-    foldLeft(ls,List[A]())((a,b)=> append(a,b))
+    foldLeft(ls, List[A]())((a, b) => append(a, b))
 
 }
