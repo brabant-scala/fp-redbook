@@ -1,38 +1,83 @@
 package nl.hugo.redbook.ch6
 
-import org.scalatest._
+import nl.hugo.redbook.Spec
 
-class Test6_11 extends WordSpec with Matchers {
-  "A candymachine" should {
-    "unlock a candy when inserting a coin and turning the knob" in {
-      State.simulateMachine(List(Coin, Turn)).run(Machine(locked = true, 5, 0))._1 should be((1, 4))
+class Test6_11 extends Spec {
+  import State.simulateMachine
+
+  val buy = List(Coin, Turn)
+
+  "simulateMachine" should {
+
+    "accept a coin when locked" in {
+      val simulation = simulateMachine(List(Coin))
+
+      val machine = Machine(locked = true, candies = 1, coins = 0)
+      val ((coins2, candies2), updated) = simulation.run(machine)
+      coins2 should be(1)
+      candies2 should be(1)
+      updated should be(Machine(locked = false, candies = 1, coins = 1))
     }
 
-    "unlock a candy when turning the knob on an unlocked machine" in {
-      State.simulateMachine(List(Turn)).run(Machine(locked = false, 5, 0))._1 should be((1, 4))
+    "refuse a coin when not locked" in {
+      val simulation = simulateMachine(List(Coin))
+
+      val machine = Machine(locked = false, candies = 1, coins = 0)
+      val ((coins2, candies2), updated) = simulation.run(machine)
+      coins2 should be(0)
+      candies2 should be(1)
+      updated should be(machine)
     }
 
-    "do nothing when turning the knob on a locked machine" in {
-      State.simulateMachine(List(Turn)).run(Machine(locked = true, 5, 0))._1 should be((0, 5))
+    "accept a turn when not locked" in {
+      val simulation = simulateMachine(List(Turn))
+
+      val machine = Machine(locked = false, candies = 1, coins = 1)
+      val ((coins2, candies2), updated) = simulation.run(machine)
+      coins2 should be(1)
+      candies2 should be(0)
+      updated should be(Machine(locked = true, candies = 0, coins = 1))
     }
 
-    "do nothing when inserting a coin in an unlocked machine" in {
-      State.simulateMachine(List(Coin)).run(Machine(locked = false, 5, 0))._1 should be((0, 5))
+    "refuse a turn when locked" in {
+      val simulation = simulateMachine(List(Turn))
+
+      val machine = Machine(locked = true, candies = 1, coins = 0)
+      val ((coins2, candies2), updated) = simulation.run(machine)
+      coins2 should be(0)
+      candies2 should be(1)
+      updated should be(machine)
     }
 
-    "ignore coins when a machine is out of candy" in {
-      State.simulateMachine(List(Coin)).run(Machine(locked = true, 0, 0))._1 should be((0, 0))
+    "refuse a coin when empty" in {
+      val simulation = simulateMachine(List(Coin))
+
+      val machine = Machine(locked = true, candies = 0, coins = 0)
+      val ((coins2, candies2), updated) = simulation.run(machine)
+      coins2 should be(0)
+      candies2 should be(0)
+      updated should be(machine)
     }
 
-    "ignore turns when a machine is out of candy" in {
-      State.simulateMachine(List(Turn)).run(Machine(locked = false, 0, 0))._1 should be((0, 0))
+    "refuse a turn when empty" in {
+      val simulation = simulateMachine(List(Turn))
+
+      val machine = Machine(locked = false, candies = 0, coins = 0)
+      val ((coins2, candies2), updated) = simulation.run(machine)
+      coins2 should be(0)
+      candies2 should be(0)
+      updated should be(machine)
     }
 
-    "release four candies for four coins" in {
-      val inputs = List(Coin, Turn, Coin, Turn, Coin, Turn, Coin, Turn)
-      val machine = Machine(locked = true, 5, 10)
+    "simulate the machine as specified in the book" in {
+      val input = List.fill(4)(buy).flatten
+      val simulation = simulateMachine(input)
 
-      State.simulateMachine(inputs).run(machine)._1 should be((14, 1))
+      val machine = Machine(locked = true, candies = 5, coins = 10)
+      val ((coins2, candies2), updated) = simulation.run(machine)
+      coins2 should be(14)
+      candies2 should be(1)
+      updated should be(Machine(locked = true, candies = 1, coins = 14))
     }
   }
 }
