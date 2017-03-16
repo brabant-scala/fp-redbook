@@ -34,5 +34,6 @@ class Test6_11 extends WordSpec with Matchers {
 
       State.simulateMachine(inputs).run(machine)._1 should be((14, 1))
     }
+
   }
 }
