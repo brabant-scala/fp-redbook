@@ -37,6 +37,9 @@ object Par {
   // Exercise 7.04
   def asyncF[A, B](f: A => B): A => Par[B] = ???
 
+  // Exercise 7.05
+  def sequence[A](ps: List[Par[A]]): Par[List[A]] = ???
+
   def map[A, B](pa: Par[A])(f: A => B): Par[B] =
     map2(pa, unit(()))((a, _) => f(a))
 
