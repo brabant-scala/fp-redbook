@@ -129,8 +129,7 @@ trait Stream[+A] {
     foldRight(State(z, Stream(z)))((input, state) => {
       val ns = f(input, state.acc)
       State(ns, cons(ns, state.results))
-    }
-    ).results
+    }).results
   }
 }
 
