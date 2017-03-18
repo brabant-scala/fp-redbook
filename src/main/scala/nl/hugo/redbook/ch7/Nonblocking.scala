@@ -1,6 +1,6 @@
 package nl.hugo.redbook.ch7
 
-import java.util.concurrent.{Callable, CountDownLatch, ExecutorService}
+import java.util.concurrent.{ Callable, CountDownLatch, ExecutorService }
 import java.util.concurrent.atomic.AtomicReference
 import language.implicitConversions
 
@@ -17,8 +17,8 @@ object Nonblocking {
     def run[A](es: ExecutorService)(p: Par[A]): A = {
       val ref = new java.util.concurrent.atomic.AtomicReference[A] // A mutable, threadsafe reference, to use for storing the result
       val latch = new CountDownLatch(1) // A latch which, when decremented, implies that `ref` has the result
-      p(es) { a => ref.set(a); latch.countDown } // Asynchronously set the result, and decrement the latch
-      latch.await // Block until the `latch.countDown` is invoked asynchronously
+      p(es) { a => ref.set(a); latch.countDown() } // Asynchronously set the result, and decrement the latch
+      latch.await() // Block until the `latch.countDown` is invoked asynchronously
       ref.get // Once we've passed the latch, we know `ref` has been set, and return its value
     }
 
@@ -41,33 +41,30 @@ object Nonblocking {
           eval(es)(a(es)(cb))
       }
 
-    /**
-      * Helper function for constructing `Par` values out of calls to non-blocking continuation-passing-style APIs.
+    /** Helper function for constructing `Par` values out of calls to non-blocking continuation-passing-style APIs.
       * This will come in handy in Chapter 13.
       */
     def async[A](f: (A => Unit) => Unit): Par[A] = es => new Future[A] {
-      def apply(k: A => Unit) = f(k)
+      def apply(k: A => Unit):Unit = f(k)
     }
 
-    /**
-      * Helper function, for evaluating an action
+    /** Helper function, for evaluating an action
       * asynchronously, using the given `ExecutorService`.
       */
     def eval(es: ExecutorService)(r: => Unit): Unit =
-      es.submit(new Callable[Unit] { def call = r })
+      es.submit(new Callable[Unit] { def call():Unit = r })
 
-
-    def map2[A,B,C](p: Par[A], p2: Par[B])(f: (A,B) => C): Par[C] =
+    def map2[A, B, C](p: Par[A], p2: Par[B])(f: (A, B) => C): Par[C] =
       es => new Future[C] {
         def apply(cb: C => Unit): Unit = {
           var ar: Option[A] = None
           var br: Option[B] = None
-          val combiner = Actor[Either[A,B]](es) {
+          val combiner = Actor[Either[A, B]](es) {
             case Left(a) =>
-              if (br.isDefined) eval(es)(cb(f(a,br.get)))
+              if (br.isDefined) eval(es)(cb(f(a, br.get)))
               else ar = Some(a)
             case Right(b) =>
-              if (ar.isDefined) eval(es)(cb(f(ar.get,b)))
+              if (ar.isDefined) eval(es)(cb(f(ar.get, b)))
               else br = Some(b)
           }
           p(es)(a => combiner ! Left(a))
@@ -76,7 +73,7 @@ object Nonblocking {
       }
 
     // specialized version of `map`
-    def map[A,B](p: Par[A])(f: A => B): Par[B] =
+    def map[A, B](p: Par[A])(f: A => B): Par[B] =
       es => new Future[B] {
         def apply(cb: B => Unit): Unit =
           p(es)(a => eval(es) { cb(f(a)) })
@@ -85,7 +82,7 @@ object Nonblocking {
     def lazyUnit[A](a: => A): Par[A] =
       fork(unit(a))
 
-    def asyncF[A,B](f: A => B): A => Par[B] =
+    def asyncF[A, B](f: A => B): A => Par[B] =
       a => lazyUnit(f(a))
 
     def sequenceRight[A](as: List[Par[A]]): Par[List[A]] =
@@ -98,7 +95,7 @@ object Nonblocking {
       if (as.isEmpty) unit(Vector())
       else if (as.length == 1) map(as.head)(a => Vector(a))
       else {
-        val (l,r) = as.splitAt(as.length/2)
+        val (l, r) = as.splitAt(as.length / 2)
         map2(sequenceBalanced(l), sequenceBalanced(r))(_ ++ _)
       }
     }
@@ -136,14 +133,14 @@ object Nonblocking {
     def choiceViaChoiceN[A](a: Par[Boolean])(ifTrue: Par[A], ifFalse: Par[A]): Par[A] =
       ???
 
-    def choiceMap[K,V](p: Par[K])(ps: Map[K,Par[V]]): Par[V] =
+    def choiceMap[K, V](p: Par[K])(ps: Map[K, Par[V]]): Par[V] =
       ???
 
     // see `Nonblocking.scala` answers file. This function is usually called something else!
-    def chooser[A,B](p: Par[A])(f: A => Par[B]): Par[B] =
+    def chooser[A, B](p: Par[A])(f: A => Par[B]): Par[B] =
       ???
 
-    def flatMap[A,B](p: Par[A])(f: A => Par[B]): Par[B] =
+    def flatMap[A, B](p: Par[A])(f: A => Par[B]): Par[B] =
       ???
 
     def choiceViaChooser[A](p: Par[Boolean])(f: Par[A], t: Par[A]): Par[A] =
@@ -158,7 +155,7 @@ object Nonblocking {
     def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] =
       ???
 
-    def flatMapViaJoin[A,B](p: Par[A])(f: A => Par[B]): Par[B] =
+    def flatMapViaJoin[A, B](p: Par[A])(f: A => Par[B]): Par[B] =
       ???
 
     /* Gives us infix syntax for `Par`. */
@@ -167,8 +164,8 @@ object Nonblocking {
     // infix versions of `map`, `map2`
     class ParOps[A](p: Par[A]) {
       def map[B](f: A => B): Par[B] = Par.map(p)(f)
-      def map2[B,C](b: Par[B])(f: (A,B) => C): Par[C] = Par.map2(p,b)(f)
-      def zip[B](b: Par[B]): Par[(A,B)] = p.map2(b)((_,_))
+      def map2[B, C](b: Par[B])(f: (A, B) => C): Par[C] = Par.map2(p, b)(f)
+      def zip[B](b: Par[B]): Par[(A, B)] = p.map2(b)((_, _))
     }
   }
 }
