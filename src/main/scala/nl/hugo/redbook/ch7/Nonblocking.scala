@@ -135,6 +135,7 @@ object Nonblocking {
     def choiceViaChoiceN[A](a: Par[Boolean])(ifTrue: Par[A], ifFalse: Par[A]): Par[A] =
       ???
 
+    // Exercise 7.12
     def choiceMap[K, V](p: Par[K])(ps: Map[K, Par[V]]): Par[V] =
       ???
 
