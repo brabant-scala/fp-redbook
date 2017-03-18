@@ -29,6 +29,9 @@ object Par {
       def call: A = a(es).get
     })
 
+  def map[A, B](pa: Par[A])(f: A => B): Par[B] =
+    map2(pa, unit(()))((a, _) => f(a))
+
   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
 
   // Exercise 7.03
@@ -40,8 +43,13 @@ object Par {
   // Exercise 7.05
   def sequence[A](ps: List[Par[A]]): Par[List[A]] = ???
 
-  def map[A, B](pa: Par[A])(f: A => B): Par[B] =
-    map2(pa, unit(()))((a, _) => f(a))
+  def parMap[A, B](ps: List[A])(f: A => B): Par[List[B]] = fork {
+    var fbs: List[Par[B]] = ps.map(asyncF(f))
+    sequence(fbs)
+  }
+
+  // Exercise 7.06
+  def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = ???
 
   def sortPar(parList: Par[List[Int]]): Par[List[Int]] = map(parList)(_.sorted)
 
