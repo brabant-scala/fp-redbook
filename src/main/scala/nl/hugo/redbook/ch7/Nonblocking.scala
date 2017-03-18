@@ -45,14 +45,14 @@ object Nonblocking {
       * This will come in handy in Chapter 13.
       */
     def async[A](f: (A => Unit) => Unit): Par[A] = es => new Future[A] {
-      def apply(k: A => Unit):Unit = f(k)
+      def apply(k: A => Unit): Unit = f(k)
     }
 
     /** Helper function, for evaluating an action
       * asynchronously, using the given `ExecutorService`.
       */
     def eval(es: ExecutorService)(r: => Unit): Unit =
-      es.submit(new Callable[Unit] { def call():Unit = r })
+      es.submit(new Callable[Unit] { def call(): Unit = r })
 
     def map2[A, B, C](p: Par[A], p2: Par[B])(f: (A, B) => C): Par[C] =
       es => new Future[C] {
