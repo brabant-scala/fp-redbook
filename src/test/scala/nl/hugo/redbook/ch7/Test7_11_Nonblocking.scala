@@ -10,7 +10,7 @@ import org.scalatest.{Matchers, WordSpec}
 
 import scala.language.postfixOps
 
-class Test7_11_NonBlocking extends WordSpec with Matchers with TimeLimitedTests {
+class Test7_11_Nonblocking extends WordSpec with Matchers with TimeLimitedTests {
 
   // Each test automatically fails after one second.
   val timeLimit: Span = 1 second

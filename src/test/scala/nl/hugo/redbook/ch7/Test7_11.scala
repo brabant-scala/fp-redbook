@@ -15,12 +15,12 @@ class Test7_11 extends WordSpec with Matchers with TimeLimitedTests {
   // Each test automatically fails after one second.
   val timeLimit: Span = 1 second
 
-  val candidates: List[String] = List("First", "Second", "third")
-
-  val lazyCandidates: List[Par[String]] = candidates.map(lazyUnit(_))
-
   "Par.choiceN" should {
     "select the correct element" in {
+      val candidates: List[String] = List("First", "Second", "third")
+
+      val lazyCandidates: List[Par[String]] = candidates.map(lazyUnit(_))
+
       for (index <- candidates.indices) {
         val es: ThreadPoolExecutor = Executors.newCachedThreadPool.asInstanceOf[ThreadPoolExecutor]
 
