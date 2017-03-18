@@ -64,6 +64,12 @@ object Par {
       if (run(es)(cond).get) t(es) // Notice we are blocking on the result of `cond`.
       else f(es)
 
+  // Exercise 7.11
+  def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = ???
+
+  // Exercise 7.11
+  def choiceViaChoiceN[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = ???
+
   /* Gives us infix syntax for `Par`. */
   implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
 

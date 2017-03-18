@@ -128,8 +128,10 @@ object Nonblocking {
           }
       }
 
+    // Exercise 7.11
     def choiceN[A](p: Par[Int])(ps: List[Par[A]]): Par[A] = ???
 
+    // Exercise 7.11
     def choiceViaChoiceN[A](a: Par[Boolean])(ifTrue: Par[A], ifFalse: Par[A]): Par[A] =
       ???
 
