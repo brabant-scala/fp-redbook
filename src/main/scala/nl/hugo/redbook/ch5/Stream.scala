@@ -186,8 +186,8 @@ object Stream {
     unfold[Int, Int](n)(v => Some(v, v + 1))
 
   // Exercise 5.12
-  def constantViaUnfold(n: Int): Stream[Int] =
-    unfold[Int, Int](n)(_ => Some(n, n))
+  def constantViaUnfold[A](n: A): Stream[A] =
+    unfold[A, A](n)(_ => Some(n, n))
 
   // Exercise 5.12
   def onesViaUnfold: Stream[Int] =

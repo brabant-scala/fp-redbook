@@ -1,16 +1,10 @@
 package nl.hugo.redbook.ch5
 
-import org.scalatest._
+import nl.hugo.redbook.ch5.spec.StartsWithSpec
 
-class Test5_14 extends WordSpec with Matchers {
-  "Stream" should {
-    "start with" in {
-      Stream(1, 2, 3).startsWith(Stream(1, 2)) should be(true)
-    }
+class Test5_14 extends StartsWithSpec {
 
-    "should not start with" in {
-      Stream(1, 2, 3).startsWith(Stream(1, 3)) should be(false)
-    }
-  }
+  override def startsWith[A](s: Stream[A]) = s.startsWith
+
+  startsWithTest("startsWith")
 }
-
