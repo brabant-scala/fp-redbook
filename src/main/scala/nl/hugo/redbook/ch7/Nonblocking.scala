@@ -154,15 +154,17 @@ object Nonblocking {
     def choiceNChooser[A](p: Par[Int])(choices: List[Par[A]]): Par[A] =
       ???
 
+    def flatMap[A, B](p: Par[A])(f: A => Par[B]): Par[B] = chooser(p)(f)
+
+    // Exercise 7.14
     def join[A](p: Par[Par[A]]): Par[A] =
       ???
 
-    def flatMap[A, B](p: Par[A])(f: A => Par[B]): Par[B] =
-      ???
-
+    // Exercise 7.14
     def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] =
       ???
 
+    // Exercise 7.14
     def flatMapViaJoin[A, B](p: Par[A])(f: A => Par[B]): Par[B] =
       ???
 
