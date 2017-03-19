@@ -4,7 +4,6 @@ import Stream._
 
 trait Stream[+A] {
 
-  // TODO: share
   // NOTE: improved by making both arguments to f lazy
   def foldRight[B](z: => B)(f: (=> A, => B) => B): B = // The arrow `=>` in front of the argument type `B` means that the function `f` takes its second argument by name and may choose not to evaluate it.
     this match {
@@ -241,15 +240,16 @@ trait Stream[+A] {
   def tails: Stream[Stream[A]] =
     tails_1
 
-  // TODO: share
   // tails - concise and efficient
-  def tails_1: Stream[Stream[A]] =
-    unfold(this) {
+  def tails_1: Stream[Stream[A]] = {
+    val result = unfold(this) {
       case c @ Cons(_, t) =>
         Some(c, t())
       case _ =>
         None
     }
+    result.append(Stream(Empty))
+  }
 
   // tails - alternative using drop
   def tails_2: Stream[Stream[A]] = {
@@ -259,14 +259,13 @@ trait Stream[+A] {
       case s =>
         Some(s, s.drop(1))
     }
-    result.append(Empty)
+    result.append(Stream(Empty))
   }
 
   // Exercise 5.16 - return type could be Cons[B]
   def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] =
     scanRight_1(z)(f)
 
-  // TODO: share
   // scanRight - based on foldRight
   def scanRight_1[B](z: B)(f: (A, => B) => B): Stream[B] =
     foldRight(Cons(() => z, () => Empty)) { (a, prev) =>
