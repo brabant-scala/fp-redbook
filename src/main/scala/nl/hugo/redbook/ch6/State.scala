@@ -102,7 +102,7 @@ object RNG {
     fs.foldRight(unit(List[A]()))((f, acc) => map2(f, acc)(_ :: _))
 
   // Exercise 6.07
-  def intsViaSequence(count: Int): Rand[List[Int]] = ???
+  def intsViaSequence(count: Int): Rand[List[Int]] = sequence(List.fill(count)(int))
 
   // Exercise 6.08
   def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = {
@@ -180,11 +180,11 @@ object State {
   } yield ()
 
   // Exercise 6.11
-
   def update(i: Input): Machine => Machine = (s: Machine) =>
     (i, s) match {
-      case (Coin, Machine(true, candies, coins)) => Machine(locked = false, candies, coins)
-      case (Turn, Machine(false, candies, coins)) if candies > 0 => Machine(locked = true, candies - 1, coins + 1)
+      case (_, Machine(_, 0, _)) => s
+      case (Coin, Machine(true, candies, coins)) => Machine(locked = false, candies, coins + 1)
+      case (Turn, Machine(false, candies, coins)) if candies > 0 => Machine(locked = true, candies - 1, coins)
       case _ => s
     }
 
