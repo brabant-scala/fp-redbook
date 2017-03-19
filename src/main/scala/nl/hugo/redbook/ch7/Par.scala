@@ -71,9 +71,16 @@ object Par {
   def choiceViaChoiceN[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = ???
 
   // Exercise 7.12
-  def choiceMap[K, V](key: Par[K])(choices: Map[K, Par[V]]): Par[V] =
-    ???
+  def choiceMap[K, V](key: Par[K])(choices: Map[K, Par[V]]): Par[V] = ???
 
+  // Exercise 7.13
+  def chooser[A, B](pa: Par[A])(choices: A => Par[B]): Par[B] = ???
+
+  // Exercise 7.13
+  def choiceViaChooser[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = ???
+
+  // Exercise 7.13
+  def choiceNViaChooser[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = ???
 
   /* Gives us infix syntax for `Par`. */
   implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
