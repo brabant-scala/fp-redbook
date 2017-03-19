@@ -6,7 +6,7 @@ import nl.hugo.redbook.ch7.Nonblocking.Par._
 import org.scalatest.concurrent.TimeLimitedTests
 import org.scalatest.time.Span
 import org.scalatest.time.SpanSugar._
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 import scala.language.postfixOps
 
@@ -41,7 +41,7 @@ class Test7_11_Nonblocking extends WordSpec with Matchers with TimeLimitedTests 
       val firstChoice = lazyUnit("First")
       val secondChoice = lazyUnit("Second")
 
-      Map( true -> "First", false -> "Second").foreach{
+      Map(true -> "First", false -> "Second").foreach {
         case (input, reference) =>
           val es: ThreadPoolExecutor = Executors.newFixedThreadPool(1).asInstanceOf[ThreadPoolExecutor]
 

@@ -6,7 +6,7 @@ import nl.hugo.redbook.ch7.Par._
 import org.scalatest.concurrent.TimeLimitedTests
 import org.scalatest.time.Span
 import org.scalatest.time.SpanSugar._
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 import scala.language.postfixOps
 

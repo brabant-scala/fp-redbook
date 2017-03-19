@@ -6,7 +6,7 @@ import nl.hugo.redbook.ch7.Par._
 import org.scalatest.concurrent.TimeLimitedTests
 import org.scalatest.time.Span
 import org.scalatest.time.SpanSugar._
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 import scala.language.postfixOps
 
@@ -22,10 +22,10 @@ class Test7_14 extends WordSpec with Matchers with TimeLimitedTests {
 
   "join" should {
     "transform a Par[Par[A]] to a Par[A]" in {
-      val par:Par[String] = lazyUnit("FOOBAR")
+      val par: Par[String] = lazyUnit("FOOBAR")
       val nestedPar: Par[Par[String]] = lazyUnit(par)
 
-      val joinedPar:Par[String] = join(nestedPar)
+      val joinedPar: Par[String] = join(nestedPar)
 
       val es: ExecutorService = Executors.newCachedThreadPool()
 
@@ -33,16 +33,16 @@ class Test7_14 extends WordSpec with Matchers with TimeLimitedTests {
 
       Par.run(es)(joinedPar).get should be("FOOBAR")
 
-      es.completedTaskCount should be > 1L
+      es.completedTaskCount should be > 0L
     }
   }
 
   "joinViaFlatmap" should {
     "transform a Par[Par[A]] to a Par[A]" in {
-      val par:Par[String] = lazyUnit("FOOBAR")
+      val par: Par[String] = lazyUnit("FOOBAR")
       val nestedPar: Par[Par[String]] = lazyUnit(par)
 
-      val joinedPar:Par[String] = join(nestedPar)
+      val joinedPar: Par[String] = join(nestedPar)
 
       val es: ExecutorService = Executors.newCachedThreadPool()
 
