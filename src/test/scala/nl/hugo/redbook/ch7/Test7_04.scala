@@ -2,6 +2,7 @@ package nl.hugo.redbook.ch7
 
 import java.util.concurrent._
 
+import nl.hugo.redbook.ch7.ExecutorServiceDecorator._
 import nl.hugo.redbook.ch7.Par._
 import org.scalatest.concurrent.TimeLimitedTests
 import org.scalatest.time.Span
@@ -15,7 +16,7 @@ class Test7_04 extends WordSpec with Matchers with TimeLimitedTests {
   // Each test automatically fails after one second.
   val timeLimit: Span = 1 second
 
-  val es: ThreadPoolExecutor = Executors.newFixedThreadPool(1).asInstanceOf[ThreadPoolExecutor]
+  val es: ExecutorService = Executors.newFixedThreadPool(1)
 
   "asyncF" should {
     "evaluate a function on a separate thread" in {
@@ -25,11 +26,11 @@ class Test7_04 extends WordSpec with Matchers with TimeLimitedTests {
 
       val par: Par[Int] = af(10)
 
-      es.getCompletedTaskCount should be(0)
+      es.completedTaskCount should be(0)
 
       Par.run(es)(par).get should be(f(10))
 
-      es.getCompletedTaskCount should be(1)
+      es.completedTaskCount should be(1)
     }
   }
 }

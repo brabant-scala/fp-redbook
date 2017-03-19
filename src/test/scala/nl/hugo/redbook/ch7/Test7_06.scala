@@ -2,6 +2,7 @@ package nl.hugo.redbook.ch7
 
 import java.util.concurrent._
 
+import nl.hugo.redbook.ch7.ExecutorServiceDecorator._
 import nl.hugo.redbook.ch7.Par._
 import org.scalatest.concurrent.TimeLimitedTests
 import org.scalatest.time.Span
@@ -15,7 +16,7 @@ class Test7_06 extends WordSpec with Matchers with TimeLimitedTests {
   // Each test automatically fails after one second.
   val timeLimit: Span = 1 second
 
-  val es: ThreadPoolExecutor = Executors.newCachedThreadPool.asInstanceOf[ThreadPoolExecutor]
+  val es: ExecutorService = Executors.newCachedThreadPool
 
   "Par.parFilter" should {
     "remove items" in {
@@ -25,11 +26,11 @@ class Test7_06 extends WordSpec with Matchers with TimeLimitedTests {
 
       val fl: Par[List[Int]] = parFilter(l)(isEven)
 
-      es.getCompletedTaskCount should be(0)
+      es.completedTaskCount should be(0)
 
       Par.run(es)(fl).get should be(List(0, 2, 4))
 
-      es.getCompletedTaskCount should be > 0L
+      es.completedTaskCount should be > 0L
     }
   }
 }
