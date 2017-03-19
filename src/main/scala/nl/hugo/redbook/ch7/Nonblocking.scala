@@ -45,14 +45,14 @@ object Nonblocking {
       * This will come in handy in Chapter 13.
       */
     def async[A](f: (A => Unit) => Unit): Par[A] = es => new Future[A] {
-      def apply(k: A => Unit):Unit = f(k)
+      def apply(k: A => Unit): Unit = f(k)
     }
 
     /** Helper function, for evaluating an action
       * asynchronously, using the given `ExecutorService`.
       */
     def eval(es: ExecutorService)(r: => Unit): Unit =
-      es.submit(new Callable[Unit] { def call():Unit = r })
+      es.submit(new Callable[Unit] { def call(): Unit = r })
 
     def map2[A, B, C](p: Par[A], p2: Par[B])(f: (A, B) => C): Par[C] =
       es => new Future[C] {
@@ -128,33 +128,43 @@ object Nonblocking {
           }
       }
 
+    // Exercise 7.11
     def choiceN[A](p: Par[Int])(ps: List[Par[A]]): Par[A] = ???
 
+    // Exercise 7.11
     def choiceViaChoiceN[A](a: Par[Boolean])(ifTrue: Par[A], ifFalse: Par[A]): Par[A] =
       ???
 
+    // Exercise 7.12
     def choiceMap[K, V](p: Par[K])(ps: Map[K, Par[V]]): Par[V] =
       ???
 
+    // Exercise 7.13
     // see `Nonblocking.scala` answers file. This function is usually called something else!
     def chooser[A, B](p: Par[A])(f: A => Par[B]): Par[B] =
       ???
 
-    def flatMap[A, B](p: Par[A])(f: A => Par[B]): Par[B] =
+    // Exercise 7.13
+    // Note[AD]: I've swapped the arguments back to (t: Par[A], f: Par[A]) they were
+    // (f: Par[A], t: Par[A]) in the original..
+    def choiceViaChooser[A](p: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
       ???
 
-    def choiceViaChooser[A](p: Par[Boolean])(f: Par[A], t: Par[A]): Par[A] =
-      ???
-
+    // Exercise 7.13
     def choiceNChooser[A](p: Par[Int])(choices: List[Par[A]]): Par[A] =
       ???
 
+    def flatMap[A, B](p: Par[A])(f: A => Par[B]): Par[B] = chooser(p)(f)
+
+    // Exercise 7.14
     def join[A](p: Par[Par[A]]): Par[A] =
       ???
 
+    // Exercise 7.14
     def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] =
       ???
 
+    // Exercise 7.14
     def flatMapViaJoin[A, B](p: Par[A])(f: A => Par[B]): Par[B] =
       ???
 

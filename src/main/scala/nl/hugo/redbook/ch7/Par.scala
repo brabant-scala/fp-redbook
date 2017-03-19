@@ -12,7 +12,7 @@ object Par {
 
   private case class UnitFuture[A](get: A) extends Future[A] {
     def isDone = true
-    def get(timeout: Long, units: TimeUnit):A = get
+    def get(timeout: Long, units: TimeUnit): A = get
     def isCancelled = false
     def cancel(evenIfRunning: Boolean): Boolean = false
   }
@@ -26,16 +26,32 @@ object Par {
 
   def fork[A](a: => Par[A]): Par[A] = // This is the simplest and most natural implementation of `fork`, but there are some problems with it--for one, the outer `Callable` will block waiting for the "inner" task to complete. Since this blocking occupies a thread in our thread pool, or whatever resource backs the `ExecutorService`, this implies that we're losing out on some potential parallelism. Essentially, we're using two threads when one should suffice. This is a symptom of a more serious problem with the implementation, and we will discuss this later in the chapter.
     es => es.submit(new Callable[A] {
-      def call:A = a(es).get
+      def call: A = a(es).get
     })
-
-  // Exercise 7.03
-  def map2WhileRespectingContracts[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = ???
 
   def map[A, B](pa: Par[A])(f: A => B): Par[B] =
     map2(pa, unit(()))((a, _) => f(a))
 
-  def sortPar(parList: Par[List[Int]]):Par[List[Int]] = map(parList)(_.sorted)
+  def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
+
+  // Exercise 7.03
+  def map2WhileRespectingContracts[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = ???
+
+  // Exercise 7.04
+  def asyncF[A, B](f: A => B): A => Par[B] = ???
+
+  // Exercise 7.05
+  def sequence[A](ps: List[Par[A]]): Par[List[A]] = ???
+
+  def parMap[A, B](ps: List[A])(f: A => B): Par[List[B]] = fork {
+    var fbs: List[Par[B]] = ps.map(asyncF(f))
+    sequence(fbs)
+  }
+
+  // Exercise 7.06
+  def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = ???
+
+  def sortPar(parList: Par[List[Int]]): Par[List[Int]] = map(parList)(_.sorted)
 
   def equal[A](e: ExecutorService)(p: Par[A], p2: Par[A]): Boolean =
     p(e).get == p2(e).get
@@ -47,6 +63,35 @@ object Par {
     es =>
       if (run(es)(cond).get) t(es) // Notice we are blocking on the result of `cond`.
       else f(es)
+
+  // Exercise 7.11
+  def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = ???
+
+  // Exercise 7.11
+  def choiceViaChoiceN[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = ???
+
+  // Exercise 7.12
+  def choiceMap[K, V](key: Par[K])(choices: Map[K, Par[V]]): Par[V] = ???
+
+  // Exercise 7.13
+  def chooser[A, B](pa: Par[A])(choices: A => Par[B]): Par[B] = ???
+
+  // Exercise 7.13
+  def choiceViaChooser[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = ???
+
+  // Exercise 7.13
+  def choiceNViaChooser[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = ???
+
+  def flatMap[A, B](p: Par[A])(f: A => Par[B]): Par[B] = chooser(p)(f)
+
+  // Exercise 7.14
+  def join[A](p: Par[Par[A]]): Par[A] = ???
+
+  // Exercise 7.14
+  def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] = ???
+
+  // Exercise 7.14
+  def flatMapViaJoin[A, B](p: Par[A])(f: A => Par[B]): Par[B] = ???
 
   /* Gives us infix syntax for `Par`. */
   implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
