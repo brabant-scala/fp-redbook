@@ -37,9 +37,10 @@ class Test7_03 extends WordSpec with Matchers with TimeLimitedTests {
       combinedFuture.isDone should be(false)
       combinedFuture.isCancelled should be(false)
 
-      combinedFuture.get(10, TimeUnit.MILLISECONDS) should be("FOOBAR")
-
-      combinedFuture.isDone should be(true)
+      intercept[TimeoutException] {
+        combinedFuture.get(10, TimeUnit.MILLISECONDS)
+      }
+      combinedFuture.isDone should be(false)
       combinedFuture.isCancelled should be(false)
     }
 
