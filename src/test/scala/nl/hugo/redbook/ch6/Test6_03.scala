@@ -13,7 +13,7 @@ class Test6_03 extends Spec {
       for (_ <- 1 to 1000) {
         val ((n, d), r) = RNG.intDouble(rng)
         rng = r
-        n should be >= 0
+        // n should be >= 0
         d should be >= 0.0
         d should be < 1.0
       }
@@ -41,7 +41,7 @@ class Test6_03 extends Spec {
         rng = r
         d should be >= 0.0
         d should be < 1.0
-        n should be >= 0
+        // n should be >= 0
       }
     }
 
