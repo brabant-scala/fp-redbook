@@ -131,7 +131,8 @@ object Nonblocking {
           p(es) { b =>
 
             if (b) eval(es) {
-              t(es)(cb)}
+              t(es)(cb)
+            }
 
             else eval(es) {
               f(es)(cb)
