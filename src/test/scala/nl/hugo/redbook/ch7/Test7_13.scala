@@ -2,6 +2,7 @@ package nl.hugo.redbook.ch7
 
 import java.util.concurrent._
 
+import nl.hugo.redbook.ch7.ExecutorServiceDecorator._
 import nl.hugo.redbook.ch7.Par._
 import org.scalatest.concurrent.TimeLimitedTests
 import org.scalatest.time.Span
@@ -14,11 +15,6 @@ class Test7_13 extends WordSpec with Matchers with TimeLimitedTests {
 
   // Each test automatically fails after one second.
   val timeLimit: Span = 1 second
-
-  implicit class ExectionServiceOps(es: ExecutorService) {
-    def completedTaskCount: Long =
-      es.asInstanceOf[ThreadPoolExecutor].getCompletedTaskCount
-  }
 
   "chooser" should {
     def candidates: Map[String, String] = Map("F" -> "First", "S" -> "Second", "T" -> "Third")
@@ -72,7 +68,7 @@ class Test7_13 extends WordSpec with Matchers with TimeLimitedTests {
 
     for (index <- candidates.indices) {
       s"selects item $index from $candidates" in {
-        val es: ExecutorService = Executors.newCachedThreadPool.asInstanceOf[ThreadPoolExecutor]
+        val es: ExecutorService = Executors.newCachedThreadPool
 
         val selector: Par[Int] = lazyUnit(index)
 
