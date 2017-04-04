@@ -45,7 +45,7 @@ class Test7_03 extends WordSpec with Matchers with TimeLimitedTests {
     }
 
     "complete the computation on short running computations" in {
-      val combinedShortPars = map2WhileRespectingContracts(Par.unit("FOO"), Par.unit("BAR"))(_+_)
+      val combinedShortPars = map2WhileRespectingContracts(Par.unit("FOO"), Par.unit("BAR"))(_ + _)
 
       val combinedShortFutures = Par.run(es)(combinedShortPars)
 
