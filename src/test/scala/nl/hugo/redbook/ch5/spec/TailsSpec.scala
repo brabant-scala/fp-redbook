@@ -22,13 +22,16 @@ trait TailsSpec extends Spec {
         List(2, 3, 4, 5),
         List(3, 4, 5),
         List(4, 5),
-        List(5)
+        List(5),
+        Nil
       ))
       eval.expect(5)
     }
 
     "return empty for an empty stream" in {
-      tails(Empty) should be(Empty)
+      val result = tails(Empty)
+      val tailsList = result.toList
+      tailsList.map(_.toList) should be(List(Nil))
     }
   }
 }

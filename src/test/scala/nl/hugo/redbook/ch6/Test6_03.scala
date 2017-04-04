@@ -13,7 +13,6 @@ class Test6_03 extends Spec {
       for (_ <- 1 to 1000) {
         val ((n, d), r) = RNG.intDouble(rng)
         rng = r
-        n should be >= 0
         d should be >= 0.0
         d should be < 1.0
       }
@@ -41,7 +40,6 @@ class Test6_03 extends Spec {
         rng = r
         d should be >= 0.0
         d should be < 1.0
-        n should be >= 0
       }
     }
 
@@ -71,6 +69,8 @@ class Test6_03 extends Spec {
         d2 should be < 1.0
         d3 should be >= 0.0
         d3 should be < 1.0
+
+        // true for the chosen seed
         d1 should not be (d2)
         d1 should not be (d3)
         d2 should not be (d3)

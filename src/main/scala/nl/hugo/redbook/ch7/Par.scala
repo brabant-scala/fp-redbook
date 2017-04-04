@@ -43,7 +43,6 @@ object Par {
       UnitFuture(f(af.get, bf.get)) // does not respect timeouts
     }
 
-  // TODO: isCancelled
   // exercise 7.3
   def map2WhileRespectingContracts[A, B, C](pa: Par[A], pb: Par[B])(f: (A, B) => C): Par[C] =
     es => new Future[C] {
@@ -78,9 +77,20 @@ object Par {
         if (isCancelled) throw new CancellationException
     }
 
-  // from section 7.3
+  // section 7.3
   def map[A, B](pa: Par[A])(f: A => B): Par[B] =
     map2(pa, unit(()))((a, _) => f(a))
+
+  // section 7.3
+  def parMap[A, B](as: List[A])(f: A => B): Par[List[B]] =
+    fork {
+      val bs: List[Par[B]] = as.map(asyncF(f))
+      sequence_1(bs) // TODO: calling sequence() uses (too) many threads
+    }
+
+  // section 7.3
+  def sortPar(parList: Par[List[Int]]): Par[List[Int]] =
+    map(parList)(_.sorted)
 
   // section 7.4.1
   def equal[A](e: ExecutorService)(p: Par[A], p2: Par[A]): Boolean =
@@ -133,13 +143,6 @@ object Par {
 
     map(go(l.toVector))(_.toList)
   }
-
-  // from section 7.3
-  def parMap[A, B](as: List[A])(f: A => B): Par[List[B]] =
-    fork {
-      val bs: List[Par[B]] = as.map(asyncF(f))
-      sequence_1(bs) // TODO: calling sequence() uses too many threads
-    }
 
   // experiment for section 7.3 (1st bullet)
   def parReduce[A](as: IndexedSeq[A])(f: (A, A) => A): Par[A] =
@@ -228,4 +231,16 @@ object Par {
   // exercise 7.14
   def flatMapViaJoin[A, B](pa: Par[A])(f: A => Par[B]): Par[B] =
     join(map(pa)(f))
+}
+
+object Examples {
+  import Par._
+  def sum(ints: IndexedSeq[Int]): Int = // `IndexedSeq` is a superclass of random-access sequences like `Vector` in the standard library. Unlike lists, these sequences provide an efficient `splitAt` method for dividing them into two parts at a particular index.
+    if (ints.size <= 1)
+      ints.headOption getOrElse 0 // `headOption` is a method defined on all collections in Scala. We saw this function in chapter 3.
+    else {
+      val (l, r) = ints.splitAt(ints.length / 2) // Divide the sequence in half using the `splitAt` function.
+      sum(l) + sum(r) // Recursively sum both halves and add the results together.
+    }
+
 }

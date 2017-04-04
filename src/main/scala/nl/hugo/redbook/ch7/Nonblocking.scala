@@ -32,6 +32,13 @@ object Nonblocking {
           cb(a)
       }
 
+    // section 7.4.4 - non strict version of unit()
+    def delay[A](a: => A): Par[A] =
+      es => new Future[A] {
+        def apply(cb: A => Unit): Unit =
+          cb(a)
+      }
+
     // section 7.4.4
     def fork[A](a: => Par[A]): Par[A] =
       es => new Future[A] {
