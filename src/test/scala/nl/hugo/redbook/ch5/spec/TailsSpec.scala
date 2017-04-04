@@ -29,7 +29,9 @@ trait TailsSpec extends Spec {
     }
 
     "return empty for an empty stream" in {
-      tails(Empty).toList should be(List(Empty))
+      val result = tails(Empty)
+      val tailsList = result.toList
+      tailsList.map(_.toList) should be(List(Nil))
     }
   }
 }

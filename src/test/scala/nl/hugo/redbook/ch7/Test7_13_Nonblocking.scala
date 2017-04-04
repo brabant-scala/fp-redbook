@@ -72,7 +72,7 @@ class Test7_13_Nonblocking extends WordSpec with Matchers with TimeLimitedTests 
 
         val selector: Nonblocking.Par[Int] = lazyUnit(index)
 
-        val candidate: Nonblocking.Par[String] = choiceNChooser(selector)(lazyCandidates)
+        val candidate: Nonblocking.Par[String] = choiceNViaChooser(selector)(lazyCandidates)
 
         es.completedTaskCount should be(0)
 

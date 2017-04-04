@@ -15,8 +15,7 @@ object Nonblocking {
   object Par {
 
     def run[A](es: ExecutorService)(p: Par[A]): A = {
-      val ref = new java.util.concurrent.atomic.AtomicReference[A]
-      // A mutable, threadsafe reference, to use for storing the result
+      val ref = new java.util.concurrent.atomic.AtomicReference[A] // A mutable, threadsafe reference, to use for storing the result
       val latch = new CountDownLatch(1) // A latch which, when decremented, implies that `ref` has the result
       p(es) { a => ref.set(a); latch.countDown() } // Asynchronously set the result, and decrement the latch
       latch.await() // Block until the `latch.countDown` is invoked asynchronously
@@ -53,6 +52,7 @@ object Nonblocking {
       * asynchronously, using the given `ExecutorService`.
       */
     def eval(es: ExecutorService)(r: => Unit): Unit =
+
       es.submit(new Callable[Unit] {
         def call(): Unit = r
       })
@@ -79,6 +79,7 @@ object Nonblocking {
     def map[A, B](p: Par[A])(f: A => B): Par[B] =
       es => new Future[B] {
         def apply(cb: B => Unit): Unit =
+
           p(es)(a => eval(es) {
             cb(f(a))
           })
@@ -128,9 +129,10 @@ object Nonblocking {
       es => new Future[A] {
         def apply(cb: A => Unit): Unit =
           p(es) { b =>
+
             if (b) eval(es) {
-              t(es)(cb)
-            }
+              t(es)(cb)}
+
             else eval(es) {
               f(es)(cb)
             }
@@ -204,18 +206,11 @@ object Nonblocking {
     def flatMapViaJoin[A, B](p: Par[A])(f: A => Par[B]): Par[B] =
       join(map(p)(f))
 
-    /* Gives us infix syntax for `Par`. */
-    implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
-
-    // infix versions of `map`, `map2`
-    class ParOps[A](p: Par[A]) {
+    // infix versions of `map`, `map2` and zip
+    implicit class ParOps[A](val p: Par[A]) extends AnyVal {
       def map[B](f: A => B): Par[B] = Par.map(p)(f)
-
       def map2[B, C](b: Par[B])(f: (A, B) => C): Par[C] = Par.map2(p, b)(f)
-
       def zip[B](b: Par[B]): Par[(A, B)] = p.map2(b)((_, _))
     }
-
   }
-
 }
