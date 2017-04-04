@@ -44,6 +44,7 @@ class Test7_03 extends WordSpec with Matchers with TimeLimitedTests {
       combinedFuture.isCancelled should be(false)
     }
 
+    // This concern is an optional test, not part of the exercise. Feel free to ignore.
     "interrupt the computation on cancel" in {
       val combinedFuture = Par.run(es)(combinedPar)
 
