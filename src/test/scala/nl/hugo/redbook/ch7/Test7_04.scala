@@ -30,7 +30,7 @@ class Test7_04 extends WordSpec with Matchers with TimeLimitedTests {
 
       Par.run(es)(par).get should be(f(10))
 
-      es.completedTaskCount should > 0L
+      es.completedTaskCount should be > 0L
     }
   }
 }
