@@ -68,7 +68,7 @@ class Test7_13_Nonblocking extends WordSpec with Matchers with TimeLimitedTests 
 
     for (index <- candidates.indices) {
       s"selects item $index from $candidates" in {
-        val es: ExecutorService = Executors.newCachedThreadPool.asInstanceOf[ThreadPoolExecutor]
+        val es: ExecutorService = Executors.newCachedThreadPool
 
         val selector: Nonblocking.Par[Int] = lazyUnit(index)
 

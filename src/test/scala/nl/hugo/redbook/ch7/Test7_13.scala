@@ -68,7 +68,7 @@ class Test7_13 extends WordSpec with Matchers with TimeLimitedTests {
 
     for (index <- candidates.indices) {
       s"selects item $index from $candidates" in {
-        val es: ExecutorService = Executors.newCachedThreadPool.asInstanceOf[ThreadPoolExecutor]
+        val es: ExecutorService = Executors.newCachedThreadPool
 
         val selector: Par[Int] = lazyUnit(index)
 
