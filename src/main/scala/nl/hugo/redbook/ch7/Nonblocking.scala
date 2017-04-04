@@ -185,7 +185,7 @@ object Nonblocking {
       chooser(p)(Map(true -> t, false -> f))
 
     // Exercise 7.13
-    def choiceNChooser[A](p: Par[Int])(choices: List[Par[A]]): Par[A] =
+    def choiceNViaChooser[A](p: Par[Int])(choices: List[Par[A]]): Par[A] =
       chooser(p)((choices.indices zip choices).toMap)
 
     def flatMap[A, B](p: Par[A])(f: A => Par[B]): Par[B] = chooser(p)(f)
