@@ -129,15 +129,20 @@ object Nonblocking {
       }
 
     // Exercise 7.11
-    def choiceN[A](p: Par[Int])(ps: List[Par[A]]): Par[A] = ???
+    def choiceN[A](p: Par[Int])(ps: List[Par[A]]): Par[A] =
+      es => new Future[A] {
+        def apply(cb: A  => Unit): Unit = p(es) { v => eval(es){ ps(v)(es)(cb) }}
+      }
 
     // Exercise 7.11
     def choiceViaChoiceN[A](a: Par[Boolean])(ifTrue: Par[A], ifFalse: Par[A]): Par[A] =
-      ???
+      choiceN(map(a)(if(_) 0 else 1))(List(ifTrue, ifFalse))
 
     // Exercise 7.12
     def choiceMap[K, V](p: Par[K])(ps: Map[K, Par[V]]): Par[V] =
-      ???
+      es => new Future[V] {
+        def apply(cb: V => Unit): Unit = p(es) { k => eval(es){ ps(k)(es)(cb) }}
+      }
 
     // Exercise 7.13
     // see `Nonblocking.scala` answers file. This function is usually called something else!

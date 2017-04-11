@@ -123,13 +123,16 @@ object Par {
       else f(es)
 
   // Exercise 7.11
-  def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = ???
+  def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] =
+    es => choices(run(es)(n).get)(es)
 
   // Exercise 7.11
-  def choiceViaChoiceN[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = ???
+  def choiceViaChoiceN[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
+    es => choiceN(map(cond)(if(_) 0 else 1))(List(t,f))(es)
 
   // Exercise 7.12
-  def choiceMap[K, V](key: Par[K])(choices: Map[K, Par[V]]): Par[V] = ???
+  def choiceMap[K, V](key: Par[K])(choices: Map[K, Par[V]]): Par[V] =
+    es => choices(run(es)(key).get)(es)
 
   // Exercise 7.13
   def chooser[A, B](pa: Par[A])(choices: A => Par[B]): Par[B] = ???
