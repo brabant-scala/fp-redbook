@@ -149,13 +149,16 @@ object Par {
   def flatMap[A, B](p: Par[A])(f: A => Par[B]): Par[B] = chooser(p)(f)
 
   // Exercise 7.14
-  def join[A](p: Par[Par[A]]): Par[A] = ???
+  def join[A](p: Par[Par[A]]): Par[A] =
+    es => run(es)(run(es)(p).get())
 
   // Exercise 7.14
-  def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] = ???
+  def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] =
+    flatMap(a)(id => id)
 
   // Exercise 7.14
-  def flatMapViaJoin[A, B](p: Par[A])(f: A => Par[B]): Par[B] = ???
+  def flatMapViaJoin[A, B](p: Par[A])(f: A => Par[B]): Par[B] =
+    join(map(p)(f))
 
   /* Gives us infix syntax for `Par`. */
   implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)

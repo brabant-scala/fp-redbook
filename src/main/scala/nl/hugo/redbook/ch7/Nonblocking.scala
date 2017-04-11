@@ -166,15 +166,18 @@ object Nonblocking {
 
     // Exercise 7.14
     def join[A](p: Par[Par[A]]): Par[A] =
-      ???
+      es => new Future[A] {
+        def apply(cb: A => Unit): Unit = p(es) { v => eval(es) {v(es)(cb)}}
+      }
 
     // Exercise 7.14
     def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] =
-      ???
+      flatMap(a)(id => id)
+
 
     // Exercise 7.14
     def flatMapViaJoin[A, B](p: Par[A])(f: A => Par[B]): Par[B] =
-      ???
+      join(map(p)(f))
 
     // infix versions of `map`, `map2` and zip
     implicit class ParOps[A](val p: Par[A]) extends AnyVal {
