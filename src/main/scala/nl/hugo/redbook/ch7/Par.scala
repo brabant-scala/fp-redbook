@@ -1,7 +1,8 @@
 package nl.hugo.redbook.ch7
 
 import java.util.concurrent._
-import language.implicitConversions
+
+import scala.language.implicitConversions
 
 object Par {
   type Par[A] = ExecutorService => Future[A]
@@ -12,8 +13,11 @@ object Par {
 
   private case class UnitFuture[A](get: A) extends Future[A] {
     def isDone = true
+
     def get(timeout: Long, units: TimeUnit): A = get
+
     def isCancelled = false
+
     def cancel(evenIfRunning: Boolean): Boolean = false
   }
 
@@ -35,10 +39,56 @@ object Par {
   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
 
   // Exercise 7.03
-  def map2WhileRespectingContracts[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = ???
+  def map2WhileRespectingContracts[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = {
+    case class DualFuture(
+      a: Future[A],
+      b: Future[B],
+      f: (A, B) => C
+    )
+      extends Future[C] {
+      private var value: Option[C] = None
+
+      override def cancel(mayInterruptIfRunning: Boolean): Boolean = {
+        a.cancel(mayInterruptIfRunning) | b.cancel(mayInterruptIfRunning)
+      }
+
+      override def get(): C =
+        value match {
+          case Some(v) => v
+          case None =>
+            val result = f(a.get, b.get)
+            value = Some(result)
+            result
+        }
+
+      override def get(timeout: Long, unit: TimeUnit): C =
+        value match {
+          case Some(v) => v
+          case None =>
+            val t0 = System.nanoTime()
+            val af = a.get(timeout, unit)
+            val remaining = System.nanoTime() - t0
+            val bf = b.get(remaining, unit)
+            val result = f(af, bf)
+            value = Some(result)
+            result
+        }
+
+      override def isCancelled: Boolean = a.isCancelled && b.isCancelled
+
+      override def isDone: Boolean = value.isDefined
+    }
+
+    es => {
+      val af = a(es)
+      val bf = b(es)
+      DualFuture(af, bf, f)
+    }
+  }
 
   // Exercise 7.04
-  def asyncF[A, B](f: A => B): A => Par[B] = ???
+  def asyncF[A, B](f: A => B): A => Par[B] = a => lazyUnit(f(a))
+
 
   // Exercise 7.05
   def sequence[A](ps: List[Par[A]]): Par[List[A]] = ???
@@ -99,10 +149,10 @@ object Par {
   class ParOps[A](p: Par[A]) {
 
   }
+
 }
 
 object Examples {
-  import Par._
   def sum(ints: IndexedSeq[Int]): Int = // `IndexedSeq` is a superclass of random-access sequences like `Vector` in the standard library. Unlike lists, these sequences provide an efficient `splitAt` method for dividing them into two parts at a particular index.
     if (ints.size <= 1)
       ints.headOption getOrElse 0 // `headOption` is a method defined on all collections in Scala. We saw this function in chapter 3.
