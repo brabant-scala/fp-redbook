@@ -52,10 +52,7 @@ object Nonblocking {
       * asynchronously, using the given `ExecutorService`.
       */
     def eval(es: ExecutorService)(r: => Unit): Unit =
-
-      es.submit(new Callable[Unit] {
-        def call(): Unit = r
-      })
+      es.submit(new Callable[Unit] { def call(): Unit = r })
 
     def map2[A, B, C](p: Par[A], p2: Par[B])(f: (A, B) => C): Par[C] =
       es => new Future[C] {
@@ -79,10 +76,7 @@ object Nonblocking {
     def map[A, B](p: Par[A])(f: A => B): Par[B] =
       es => new Future[B] {
         def apply(cb: B => Unit): Unit =
-
-          p(es)(a => eval(es) {
-            cb(f(a))
-          })
+          p(es)(a => eval(es) { cb(f(a)) })
       }
 
     def lazyUnit[A](a: => A): Par[A] =
@@ -129,83 +123,51 @@ object Nonblocking {
       es => new Future[A] {
         def apply(cb: A => Unit): Unit =
           p(es) { b =>
-
-            if (b) eval(es) {
-              t(es)(cb)
-            }
-
-            else eval(es) {
-              f(es)(cb)
-            }
+            if (b) eval(es) { t(es)(cb) }
+            else eval(es) { f(es)(cb) }
           }
       }
 
     // Exercise 7.11
-    def choiceN[A](p: Par[Int])(ps: List[Par[A]]): Par[A] =
-      es => new Future[A] {
-        def apply(cb: A => Unit): Unit =
-          p(es) { i =>
-            eval(es) {
-              ps(i)(es)(cb)
-            }
-          }
-      }
+    def choiceN[A](p: Par[Int])(ps: List[Par[A]]): Par[A] = ???
 
     // Exercise 7.11
     def choiceViaChoiceN[A](a: Par[Boolean])(ifTrue: Par[A], ifFalse: Par[A]): Par[A] =
-      choiceN(map(a)(v => if (v) 0 else 1))(List(ifTrue, ifFalse))
+      ???
 
     // Exercise 7.12
     def choiceMap[K, V](p: Par[K])(ps: Map[K, Par[V]]): Par[V] =
-      es => new Future[V] {
-        def apply(cb: V => Unit): Unit =
-          p(es) { k =>
-            eval(es) {
-              ps(k)(es)(cb)
-            }
-          }
-      }
+      ???
 
     // Exercise 7.13
     // see `Nonblocking.scala` answers file. This function is usually called something else!
-    def chooser[A, B](p: Par[A])(f: A => Par[B]): Par[B] = es =>
-      new Future[B] {
-        def apply(cb: B => Unit): Unit =
-          p(es) { k =>
-            eval(es) {
-              f(k)(es)(cb)
-            }
-          }
-      }
+    def chooser[A, B](p: Par[A])(f: A => Par[B]): Par[B] =
+      ???
 
     // Exercise 7.13
     // Note[AD]: I've swapped the arguments back to (t: Par[A], f: Par[A]) they were
     // (f: Par[A], t: Par[A]) in the original..
     def choiceViaChooser[A](p: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
-      chooser(p)(Map(true -> t, false -> f))
+      ???
 
     // Exercise 7.13
+    // Renamed from chooseNChooser
     def choiceNViaChooser[A](p: Par[Int])(choices: List[Par[A]]): Par[A] =
-      chooser(p)((choices.indices zip choices).toMap)
+      ???
 
     def flatMap[A, B](p: Par[A])(f: A => Par[B]): Par[B] = chooser(p)(f)
 
     // Exercise 7.14
     def join[A](p: Par[Par[A]]): Par[A] =
-      es => new Future[A] {
-        def apply(cb: A => Unit): Unit =
-          p(es)(p2 => eval(es) {
-            p2(es)(cb)
-          })
-      }
+      ???
 
     // Exercise 7.14
     def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] =
-      flatMap(a)(x => x)
+      ???
 
     // Exercise 7.14
     def flatMapViaJoin[A, B](p: Par[A])(f: A => Par[B]): Par[B] =
-      join(map(p)(f))
+      ???
 
     // infix versions of `map`, `map2` and zip
     implicit class ParOps[A](val p: Par[A]) extends AnyVal {

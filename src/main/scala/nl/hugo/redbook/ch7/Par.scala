@@ -35,46 +35,13 @@ object Par {
   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
 
   // Exercise 7.03
-  // Copied from solutions to valdidate tests.
-  def map2WhileRespectingContracts[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] =
-    es => {
-      val (af, bf) = (a(es), b(es))
-      Map2Future(af, bf, f)
-    }
-
-  /*
-  Note: this implementation will not prevent repeated evaluation if multiple threads call `get` in parallel. We could prevent this using synchronization, but it isn't needed for our purposes here (also, repeated evaluation of pure values won't affect results).
-  */
-  case class Map2Future[A, B, C](a: Future[A], b: Future[B],
-    f: (A, B) => C) extends Future[C] {
-    @volatile var cache: Option[C] = None
-    def isDone = cache.isDefined
-    def isCancelled = a.isCancelled || b.isCancelled
-    def cancel(evenIfRunning: Boolean) =
-      a.cancel(evenIfRunning) || b.cancel(evenIfRunning)
-    def get = compute(Long.MaxValue)
-    def get(timeout: Long, units: TimeUnit): C =
-      compute(TimeUnit.NANOSECONDS.convert(timeout, units))
-
-    private def compute(timeoutInNanos: Long): C = cache match {
-      case Some(c) => c
-      case None =>
-        val start = System.nanoTime
-        val ar = a.get(timeoutInNanos, TimeUnit.NANOSECONDS)
-        val stop = System.nanoTime; val aTime = stop - start
-        val br = b.get(timeoutInNanos - aTime, TimeUnit.NANOSECONDS)
-        val ret = f(ar, br)
-        cache = Some(ret)
-        ret
-    }
-  }
+  def map2WhileRespectingContracts[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = ???
 
   // Exercise 7.04
-  def asyncF[A, B](f: A => B): A => Par[B] = a => lazyUnit(f(a))
+  def asyncF[A, B](f: A => B): A => Par[B] = ???
 
   // Exercise 7.05
-  def sequence[A](ps: List[Par[A]]): Par[List[A]] =
-    ps.foldRight(unit(Nil: List[A]))((a, l) => Par.map2(a, l)(_ :: _))
+  def sequence[A](ps: List[Par[A]]): Par[List[A]] = ???
 
   def parMap[A, B](ps: List[A])(f: A => B): Par[List[B]] = fork {
     var fbs: List[Par[B]] = ps.map(asyncF(f))
@@ -82,12 +49,7 @@ object Par {
   }
 
   // Exercise 7.06
-  def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = {
-    val psa = parMap(as)(a => if (f(a)) List(a) else Nil)
-
-    //Flatten the Par[List[List[A]] to Par[List[A]]
-    map(psa)(_.flatten)
-  }
+  def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = ???
 
   def sortPar(parList: Par[List[Int]]): Par[List[Int]] = map(parList)(_.sorted)
 
@@ -103,40 +65,33 @@ object Par {
       else f(es)
 
   // Exercise 7.11
-  def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] =
-    es => choices(run(es)(n).get)(es)
+  def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = ???
 
   // Exercise 7.11
-  def choiceViaChoiceN[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
-    choiceN(map(cond)(v => if (v) 0 else 1))(List(t, f))
+  def choiceViaChoiceN[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = ???
 
   // Exercise 7.12
-  def choiceMap[K, V](key: Par[K])(choices: Map[K, Par[V]]): Par[V] =
-    es => choices(run(es)(key).get)(es)
+  def choiceMap[K, V](key: Par[K])(choices: Map[K, Par[V]]): Par[V] = ???
 
   // Exercise 7.13
-  def chooser[A, B](pa: Par[A])(choices: A => Par[B]): Par[B] =
-    es => choices(run(es)(pa).get)(es)
+  def chooser[A, B](pa: Par[A])(choices: A => Par[B]): Par[B] = ???
 
   // Exercise 7.13
-  def choiceViaChooser[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
-    chooser(cond)(Map(true -> t, false -> f))
+  def choiceViaChooser[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = ???
 
   // Exercise 7.13
-  def choiceNViaChooser[A](n: Par[Int])(choices: List[Par[A]]): Par[A] =
-    chooser(n)((choices.indices zip choices).toMap)
+  def choiceNViaChooser[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = ???
 
   def flatMap[A, B](p: Par[A])(f: A => Par[B]): Par[B] = chooser(p)(f)
 
   // Exercise 7.14
-  def join[A](p: Par[Par[A]]): Par[A] =
-    es => run(es)(run(es)(p).get())
+  def join[A](p: Par[Par[A]]): Par[A] = ???
 
   // Exercise 7.14
-  def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] = flatMap(a)(x => x)
+  def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] = ???
 
   // Exercise 7.14
-  def flatMapViaJoin[A, B](p: Par[A])(f: A => Par[B]): Par[B] = join(map(p)(f))
+  def flatMapViaJoin[A, B](p: Par[A])(f: A => Par[B]): Par[B] = ???
 
   /* Gives us infix syntax for `Par`. */
   implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
