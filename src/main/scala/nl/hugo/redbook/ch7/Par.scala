@@ -91,7 +91,8 @@ object Par {
 
 
   // Exercise 7.05
-  def sequence[A](ps: List[Par[A]]): Par[List[A]] = ???
+  def sequence[A](ps: List[Par[A]]): Par[List[A]] =
+    ps.foldRight(Par.unit(List.empty[A]))(map2(_,_)(_::_))
 
   def parMap[A, B](ps: List[A])(f: A => B): Par[List[B]] = fork {
     var fbs: List[Par[B]] = ps.map(asyncF(f))
@@ -99,7 +100,14 @@ object Par {
   }
 
   // Exercise 7.06
-  def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = ???
+  def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = {
+    val lol: Par[List[List[A]]] = parMap(as){
+      case v if f(v) => List(v)
+      case _ => Nil
+    }
+    map(lol)(_.flatten)
+  }
+
 
   def sortPar(parList: Par[List[Int]]): Par[List[Int]] = map(parList)(_.sorted)
 
