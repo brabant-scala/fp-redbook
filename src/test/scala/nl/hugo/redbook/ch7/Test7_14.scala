@@ -38,7 +38,7 @@ class Test7_14 extends WordSpec with Matchers with TimeLimitedTests {
       val par: Par[String] = lazyUnit("FOOBAR")
       val nestedPar: Par[Par[String]] = lazyUnit(par)
 
-      val joinedPar: Par[String] = join(nestedPar)
+      val joinedPar: Par[String] = joinViaFlatMap(nestedPar)
 
       val es: ExecutorService = Executors.newCachedThreadPool()
 
