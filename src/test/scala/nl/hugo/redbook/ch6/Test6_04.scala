@@ -10,7 +10,7 @@ class Test6_04 extends WordSpec with Matchers {
       val mock = RNGMock(1, RNGMock(2, RNGMock(3, rng)))
 
       RNG.ints(3)(mock) should be((List(1, 2, 3), rng))
-      // DISCUSS: shouldn't the list that we expect be reversed (like in next line)?
+      // DISCUSS: shouldn't the list that we expect be reversed (like in next line)? << No, values come in the order 1,2,3
       RNG.intsViaSequence(3)(mock) should be((List(1, 2, 3).reverse, rng))
     }
 
