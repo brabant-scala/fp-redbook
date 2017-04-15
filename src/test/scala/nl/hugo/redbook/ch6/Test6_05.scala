@@ -1,35 +1,41 @@
 package nl.hugo.redbook.ch6
 
-import org.scalatest._
+import nl.hugo.redbook.Spec
 
-class Test6_05 extends WordSpec with Matchers {
-  val rng = RNG.Simple(0)
+class Test6_05 extends Spec {
 
-  "RNG.doubleViaMap" should {
-    val rng = RNG.Simple(0)
+  implicit val last = CNG.zero
 
-    "convert an integer to a double" in {
-      val mock = RNGMock(1234, rng)
+  "double (via map)" should {
 
-      RNG.doubleViaMap(mock)._1 should be(0.000000574626028537750244140625 +- 1e-12)
+    "return random doubles between 0 and 1" in {
+      var rng: RNG = RNG.Simple(System.currentTimeMillis)
+      for (_ <- 1 to 1000) {
+        val (d, r) = RNG.doubleViaMap(rng)
+        rng = r
+        d should be >= 0.0
+        d should be < 1.0
+      }
     }
 
-    "convert zero to a zero" in {
-      val mock = RNGMock(0, rng)
-
-      RNG.doubleViaMap(mock)._1 should be(0.0)
+    "return a new generator" in {
+      val rng = CNG(0)
+      val (_, r) = RNG.doubleViaMap(rng)
+      r should be(last)
     }
 
-    "convert IntMaxValue to a double" in {
-      val mock = RNGMock(Int.MaxValue, rng)
-
-      RNG.doubleViaMap(mock)._1 should be(0.9999999995343387 +- 1e-12)
+    "handle lower corner case" in {
+      val rng = CNG(0)
+      val (d, _) = RNG.doubleViaMap(rng)
+      d should be >= 0.0
+      d should be < 1.0
     }
 
-    "return the next RNG object" in {
-      val mock = RNGMock(0, rng)
-
-      RNG.doubleViaMap(mock)._2 should be(rng)
+    "handle upper corner case" in {
+      val rng = CNG(Int.MaxValue)
+      val (d, _) = RNG.doubleViaMap(rng)
+      d should be >= 0.0
+      d should be < 1.0
     }
   }
 }

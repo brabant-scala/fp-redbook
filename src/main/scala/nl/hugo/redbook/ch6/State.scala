@@ -9,7 +9,7 @@ object RNG {
   // NB - this was called SimpleRNG in the book text
 
   case class Simple(seed: Long) extends RNG {
-    def nextInt: (Int, RNG) = {
+    override def nextInt: (Int, RNG) = {
       val newSeed = (seed * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL
       // `&` is bitwise AND. We use the current seed to generate a new seed.
       val nextRNG = Simple(newSeed)
@@ -103,6 +103,8 @@ object RNG {
     })
   }
 
+
+  // Exercise 6.07
   def intsViaSequence(count: Int): Rand[List[Int]] = sequence(List.fill(count)(int))
 
   // Exercise 6.08
