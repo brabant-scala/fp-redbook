@@ -143,9 +143,28 @@ object Stream {
     def next(p: Int, c: Int): Stream[Int] = cons(p+c, next(c, p+c))
     cons(0, cons(1, next(0, 1)))
   }
+  def fibs2: Stream[Int] = {
+    def next(p:Int, c:Int): Stream[Int] = cons(p+c, next(p, p+c))
+    cons(0, next(0, 1))
+
+//    0
+//    1
+//    0 + 1 = 1    p==0 + c==1
+//    1 + 1 = 2    p==1 + c==1
+//    1 + 2 = 3    p==1 + c==2
+//    2 + 3 = 5    p==2 + c==3
+//    3 + 5 = 8    p==3 + c==5
+  }
+
+  // Hugo heeft testen aangepast, zodat ook de efficientie gemonitored wordt.
 
   // Exercise 5.11
-  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = ???
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = {
+    f(z) match {
+      case Some((a,s)) => cons(a, unfold(s)(f))
+      case _ => Empty
+    }
+  }
 
   // Exercise 5.12
   def fibsViaUnfold: Stream[Int] = ???
