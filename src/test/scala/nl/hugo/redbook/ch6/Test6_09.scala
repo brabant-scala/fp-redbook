@@ -1,37 +1,30 @@
 package nl.hugo.redbook.ch6
 
-import org.scalatest._
+import nl.hugo.redbook.Spec
 
-class Test6_09 extends WordSpec with Matchers {
-  val rng = RNG.Simple(0)
+class Test6_09 extends Spec {
 
-  "RNG.mapViaFlatMap" should {
-    "apply the function f" in {
-      val l = RNG.unit(1234)
+  implicit val last = CNG.zero
 
-      RNG.mapViaFlatMap(l)(_ + 1)(rng) should be((1234 + 1, rng))
-    }
+  "map (via flatMap)" should {
 
-    "progress the RNG object" in {
-      val (_, rng2) = rng.nextInt
-
-      RNG.mapViaFlatMap(RNG.doubleViaMap)(_ + 1.0)(rng)._2 should be(rng2)
+    "convert an action into another action" in {
+      val rng = CNG(42)
+      val rand = RNG.map(RNG.int)(_ / 6)
+      val (n, r) = rand(rng)
+      n should be(7)
+      r should be(last)
     }
   }
 
-  "RNG.map2ViaFlatMap" should {
-    "apply the function f" in {
-      val l = RNG.unit(1234)
-      val r = RNG.unit(5678)
+  "map2 (via flatMap)" should {
 
-      RNG.map2ViaFlatMap(l, r)(_ + _)(rng) should be((1234 + 5678, rng))
-    }
-
-    "progress the RNG object" in {
-      val (_, rng2) = rng.nextInt
-      val (_, rng3) = rng2.nextInt
-
-      RNG.map2ViaFlatMap(RNG.doubleViaMap, RNG.doubleViaMap)(_ + _)(rng)._2 should be(rng3)
+    "combine two actions into one action" in {
+      val rng = CNG(6, 7)
+      val rand = RNG.map2(RNG.int, RNG.int)(_ * _)
+      val (n, r) = rand(rng)
+      n should be(42)
+      r should be(last)
     }
   }
 }
