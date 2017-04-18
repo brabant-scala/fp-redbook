@@ -51,18 +51,14 @@ object Par {
       private var running = new AtomicBoolean(false)
       def isDone = value.isDefined
       def get(timeout: Long, units: TimeUnit): C = {
-        checkCancelled()
-        running.set(true)
+        checked(running.set(true))
         val start = System.currentTimeMillis
         val a = pa(es).get(timeout, units)
         val elapsed = System.currentTimeMillis - start
         val left = units.convert(timeout, TimeUnit.MILLISECONDS) - elapsed
-        checkCancelled()
-        val b = pb(es).get(left, TimeUnit.MILLISECONDS)
-        checkCancelled()
-        val c = f(a, b)
-        checkCancelled()
-        value = Some(c)
+        val b = checked(pb(es).get(left, TimeUnit.MILLISECONDS))
+        val c = checked(f(a, b))
+        value = checked(Some(c))
         c
       }
       def get = get(7, TimeUnit.DAYS)
@@ -73,8 +69,9 @@ object Par {
           cancelled.set(true)
           true
         }
-      private def checkCancelled(): Unit =
+      private def checked[A](a: => A): A =
         if (isCancelled) throw new CancellationException
+        else a
     }
 
   // section 7.3
