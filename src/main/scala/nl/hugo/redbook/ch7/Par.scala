@@ -35,13 +35,36 @@ object Par {
   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
 
   // Exercise 7.03
-  def map2WhileRespectingContracts[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = ???
+  def map2WhileRespectingContracts[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] =
+    (es: ExecutorService) => new Future[C] {
+
+      var result: Option[C] = None
+
+      override def cancel(mayInterruptIfRunning: Boolean) = af.cancel(mayInterruptIfRunning) && bf.cancel(mayInterruptIfRunning)
+
+      override def isCancelled = af.isCancelled || bf.isCancelled
+
+      override def isDone = result.isDefined
+
+      override def get() = f(af.get,bf.get)
+      override def get(timeout: Long, unit: TimeUnit) = {
+        result = Option(f(af.get(timeout, unit), bf.get(timeout - aTime, unit)))
+        result.get
+      }
+
+      private val startTime = System.currentTimeMillis()
+      private val af = a(es)
+      private val aTime = System.currentTimeMillis() - startTime
+      private val bf = b(es)
+    }
 
   // Exercise 7.04
-  def asyncF[A, B](f: A => B): A => Par[B] = ???
+  def asyncF[A, B](f: A => B): A => Par[B] = (a: A) => lazyUnit(f(a))
 
   // Exercise 7.05
-  def sequence[A](ps: List[Par[A]]): Par[List[A]] = ???
+  def sequence[A](ps: List[Par[A]]): Par[List[A]] =
+//    ps.foldLeft(unit(List.empty[A]))((acc, parA) => map2(acc, parA)((list, item) => list :+ item))
+    ps.foldRight(unit(List.empty[A]))((parA, acc) => map2(acc, parA)((list, item) => item +: list))
 
   def parMap[A, B](ps: List[A])(f: A => B): Par[List[B]] = fork {
     var fbs: List[Par[B]] = ps.map(asyncF(f))
@@ -49,9 +72,68 @@ object Par {
   }
 
   // Exercise 7.06
-  def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = ???
+  def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] =
+//    parMap(as.filter(f))(x => x)
+//    map2(parMap[A, Option[A]](as)(a => if (f(a)) Option(a) else None), unit(()))((x, _) => x.flatten)
+    map(parMap[A, Option[A]](as)(a => if (f(a)) Option(a) else None))(_.flatten)
+
+  def parSum(as: IndexedSeq[Int]): Par[Int] =
+    if (as.length <= 1) unit(as.headOption.getOrElse(0))
+    else {
+      val (l,r) = as.splitAt(as.length/2)
+      map2[Int,Int, Int](fork(parSum(l)), fork(parSum(r)))(_ + _)
+    }
+
+  def divideAndConquer(as: IndexedSeq[Int])(f: (Int, Int) => Int): Par[Int] =
+    if (as.length <= 1) unit(as.headOption.getOrElse(0))
+    else {
+      val (l,r) = as.splitAt(as.length/2)
+      map2(fork(divideAndConquer(l)(f)), fork(divideAndConquer(r)(f)))(f(_,_))
+    }
+
+  def parSum2(as: IndexedSeq[Int]): Par[Int] = divideAndConquer(as)((a,b) => a + b)
+
+  def parMax(as: IndexedSeq[Int]): Par[Int] = divideAndConquer(as)((a,b) => a.max(b))
 
   def sortPar(parList: Par[List[Int]]): Par[List[Int]] = map(parList)(_.sorted)
+
+  def countWords(paragraphs: List[String]): Par[Int] =
+    if (paragraphs.length <= 1) unit(paragraphs.headOption.map(_.split(" ").length).getOrElse(0))
+    else {
+      val (l,r) = paragraphs.splitAt(paragraphs.length/2)
+      map2(fork(countWords(l)), fork(countWords(r)))(_ + _)
+    }
+
+  def divideAndConquer2[A,B](as: Iterable[A])(f: (Option[A] => B))(g: (B, B) => B): Par[B] =
+    if (as.size <= 1) unit(f(as.headOption))
+    else {
+      val (l,r) = as.splitAt(as.size/2)
+      map2(fork(divideAndConquer2(l)(f)(g)), fork(divideAndConquer2(r)(f)(g)))(g)
+    }
+
+  def countWords2(paragraphs: List[String]): Par[Int] =
+    divideAndConquer2(paragraphs) {
+      case Some(x) => x.split(" ").length
+      case _ => 0
+    }(_ + _)
+
+  def map3[A, B, C, D](pa: Par[A], pb: Par[B], pc: Par[C])(f: (A, B, C) => D): Par[D] = {
+    val ab = map2(pa,pb)((_, _))
+    map2(ab, pc) { case ((a, b), c) => f(a, b, c) }
+  }
+
+  def map4[A,B,C,D,E](pa: Par[A], pb: Par[B], pc: Par[C], pd: Par[D])(f: (A,B,C,D) => E) = {
+    val ab = map2(pa,pb)((_, _))
+    val cd = map2(pc,pd)((_, _))
+    map2(ab, cd){ case ((a,b), (c, d)) => f(a, b, c, d) }
+  }
+
+  def map5[A,B,C,D,E,F](pa: Par[A], pb: Par[B], pc: Par[C], pd: Par[D], pe: Par[E])(f: (A,B,C,D,E) => F) = {
+    val ab = map2(pa,pb)((_, _))
+    val cd = map2(pc,pd)((_, _))
+    val abcd = map2(ab, cd)((_, _))
+    map2(abcd, pe){ case ((a,b), (c, d), e) => f(a, b, c, d, e) }
+  }
 
   def equal[A](e: ExecutorService)(p: Par[A], p2: Par[A]): Boolean =
     p(e).get == p2(e).get
