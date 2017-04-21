@@ -104,6 +104,7 @@ object Par {
       map2(fork(countWords(l)), fork(countWords(r)))(_ + _)
     }
 
+  // TODO: i.p.v. f een val meegeven (de default waarde) en dan met getOrElse
   def divideAndConquer2[A,B](as: Iterable[A])(f: (Option[A] => B))(g: (B, B) => B): Par[B] =
     if (as.size <= 1) unit(f(as.headOption))
     else {
