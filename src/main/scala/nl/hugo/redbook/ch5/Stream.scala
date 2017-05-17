@@ -77,8 +77,8 @@ trait Stream[+A] {
   def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] = ???
 
   // special case of `zipWith`
-  def zip[B](s2: Stream[B]): Stream[(A,B)] =
-    zipWith(s2)((_,_))
+  def zip[B](s2: Stream[B]): Stream[(A, B)] =
+    zipWith(s2)((_, _))
 }
 
 case object Empty extends Stream[Nothing]
