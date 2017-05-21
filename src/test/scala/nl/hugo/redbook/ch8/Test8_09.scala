@@ -1,21 +1,23 @@
 package nl.hugo.redbook.ch8
 
 import nl.hugo.redbook.ch6.RNG
-import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
+import org.scalatest.{ BeforeAndAfterEach, Matchers, WordSpec }
 
-class Test8_09 extends WordSpec with Matchers with BeforeAndAfterEach{
+class Test8_09 extends WordSpec with Matchers with BeforeAndAfterEach {
   var passingPropCount = 0
   val passingProp: Prop = Prop.forAll(Gen.unit("foo"))(
     _ => {
       passingPropCount += 1
       true
-    })
+    }
+  )
   var failingPropCount = 0
   val failingProp: Prop = Prop.forAll(Gen.unit("foo"))(
     _ => {
       failingPropCount += 1
       false
-    })
+    }
+  )
 
   override def beforeEach(): Unit = {
     passingPropCount = 0

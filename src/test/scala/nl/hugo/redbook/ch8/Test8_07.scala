@@ -2,7 +2,7 @@ package nl.hugo.redbook.ch8
 
 import nl.hugo.redbook.ch6.RNG
 import org.scalatest.Inspectors._
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 class Test8_07 extends WordSpec with Matchers {
   "An union" should {
@@ -46,7 +46,7 @@ class Test8_07 extends WordSpec with Matchers {
     }
 
     "not simply alternate between generators" in {
-      randomLists should not (
+      randomLists should not(
         contain only List(false, true, false, true) or
           contain only List(true, false, true, false)
       )
