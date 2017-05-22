@@ -38,7 +38,7 @@ class Test7_14_Nonblocking extends WordSpec with Matchers with TimeLimitedTests 
       val par: Nonblocking.Par[String] = lazyUnit("FOOBAR")
       val nestedPar: Nonblocking.Par[Nonblocking.Par[String]] = lazyUnit(par)
 
-      val joinedPar: Nonblocking.Par[String] = join(nestedPar)
+      val joinedPar: Nonblocking.Par[String] = joinViaFlatMap(nestedPar)
 
       val es: ExecutorService = Executors.newCachedThreadPool()
 
