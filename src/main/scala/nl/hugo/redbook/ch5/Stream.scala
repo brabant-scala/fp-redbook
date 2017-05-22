@@ -115,6 +115,8 @@ trait Stream[+A] {
         }
     }
 
+  def zip[B](s: Stream[B]): Stream[(A,B)] = zipWith(s)((_,_))
+
   // Exercise 5.13
   def zipWith[B, C](s: Stream[B])(f: (A, B) => C): Stream[C] =
     unfold((this, s)) {
@@ -147,6 +149,7 @@ trait Stream[+A] {
       case None => Option.empty
       case Some(Empty) => Option((Empty, Option.empty))
       case Some(Cons(h, t)) => Option((Cons(h, t), Option(t())))
+      case _ => ???
     }
   }
 

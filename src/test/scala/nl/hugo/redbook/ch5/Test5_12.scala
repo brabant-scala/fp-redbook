@@ -6,7 +6,7 @@ class Test5_12 extends FibsSpec with FromSpec with ConstantSpec {
 
   override def fibs = Stream.fibsViaUnfold
   override def from = Stream.fromViaUnfold
-  override def constant[A] = Stream.constantViaUnfold
+  override def constant[A] = ??? //Stream.constantViaUnfold
 
   fibsTest("fibs (via unfold)")
   fromTest("from (via unfold)")

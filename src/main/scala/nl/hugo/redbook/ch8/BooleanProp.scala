@@ -1,8 +1,10 @@
 package nl.hugo.redbook.ch8
 
-trait BooleanProp {
+trait BooleanProp { self =>
   def check: Boolean
 
   // Exercise 8.3
-  def &&(p: BooleanProp): BooleanProp = ???
+  def &&(p: BooleanProp): BooleanProp = new BooleanProp {
+    override def check: Boolean = self.check && p.check
+  }
 }

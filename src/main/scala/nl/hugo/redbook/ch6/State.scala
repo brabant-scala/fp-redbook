@@ -32,6 +32,10 @@ object RNG {
       (f(a), rng2)
     }
 
+  def boolean(rng: RNG): (Boolean, RNG) = {
+    val (n, next) = rng.nextInt
+    (n % 2 == 0, next)
+  }
   // Exercise 6.01
   def nonNegativeInt(rng: RNG): (Int, RNG) = {
     val (n, next) = rng.nextInt
@@ -45,7 +49,7 @@ object RNG {
   // Exercise 6.02
   def double(rng: RNG): (Double, RNG) = {
     val (n, next) = nonNegativeInt(rng)
-    (n.toDouble / (Int.MaxValue + 1), next)
+    (n.toDouble / (Int.MaxValue + 1.0d), next)
   }
 
   // Exercise 6.03
