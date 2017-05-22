@@ -89,10 +89,9 @@ object Par {
   // Exercise 7.04
   def asyncF[A, B](f: A => B): A => Par[B] = a => lazyUnit(f(a))
 
-
   // Exercise 7.05
   def sequence[A](ps: List[Par[A]]): Par[List[A]] =
-    ps.foldRight(Par.unit(List.empty[A]))(map2(_,_)(_::_))
+    ps.foldRight(Par.unit(List.empty[A]))(map2(_, _)(_ :: _))
 
   def parMap[A, B](ps: List[A])(f: A => B): Par[List[B]] = fork {
     var fbs: List[Par[B]] = ps.map(asyncF(f))
@@ -101,13 +100,12 @@ object Par {
 
   // Exercise 7.06
   def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = {
-    val lol: Par[List[List[A]]] = parMap(as){
+    val lol: Par[List[List[A]]] = parMap(as) {
       case v if f(v) => List(v)
       case _ => Nil
     }
     map(lol)(_.flatten)
   }
-
 
   def sortPar(parList: Par[List[Int]]): Par[List[Int]] = map(parList)(_.sorted)
 
@@ -128,7 +126,7 @@ object Par {
 
   // Exercise 7.11
   def choiceViaChoiceN[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
-    es => choiceN(map(cond)(if(_) 0 else 1))(List(t,f))(es)
+    es => choiceN(map(cond)(if (_) 0 else 1))(List(t, f))(es)
 
   // Exercise 7.12
   def choiceMap[K, V](key: Par[K])(choices: Map[K, Par[V]]): Par[V] =
@@ -140,7 +138,7 @@ object Par {
 
   // Exercise 7.13
   def choiceViaChooser[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
-    chooser(cond)(if(_) t else f)
+    chooser(cond)(if (_) t else f)
 
   // Exercise 7.13
   def choiceNViaChooser[A](n: Par[Int])(choices: List[Par[A]]): Par[A] =

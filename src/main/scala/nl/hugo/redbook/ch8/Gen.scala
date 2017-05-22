@@ -2,6 +2,7 @@ package nl.hugo.redbook.ch8
 
 import nl.hugo.redbook.ch5.Stream
 import nl.hugo.redbook.ch6._
+import nl.hugo.redbook.ch6.RNG._
 import nl.hugo.redbook.ch7._
 import nl.hugo.redbook.ch7.Par.Par
 import Gen._
@@ -10,10 +11,22 @@ import java.util.concurrent.{ ExecutorService, Executors }
 
 case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
   // Exercise 8.9
-  def &&(p: Prop): Prop = ???
+  def &&(p: Prop): Prop = Prop {
+    (ms, tc, rng) =>
+      run(ms, tc, rng) match {
+        case Passed => p.run(ms, tc, rng)
+        case x => x
+      }
+  }
 
   // Exercise 8.9
-  def ||(p: Prop): Prop = ???
+  def ||(p: Prop): Prop = Prop {
+    (ms, tc, rng) =>
+      run(ms, tc, rng) match {
+        case Passed => Passed
+        case _ => p.run(ms, tc, rng)
+      }
+  }
 }
 
 object Prop {
@@ -96,28 +109,30 @@ object Prop {
 
 object Gen {
   // Exercise 8.4
-  def choose(start: Int, stopExclusive: Int): Gen[Int] = ???
+  def choose(start: Int, stopExclusive: Int): Gen[Int] =
+    Gen(State(RNG.nonNegativeLessThan(stopExclusive - start)).map(_ + start))
 
   // Exercise 8.5
-  def unit[A](a: => A): Gen[A] = ???
+  def unit[A](a: => A): Gen[A] = Gen(State.unit(a))
 
   // Exercise 8.5
-  def boolean: Gen[Boolean] = ???
+  def boolean: Gen[Boolean] = Gen(State(RNG.boolean))
 
   // Exercise 8.5
-  def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = ???
+  def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = Gen(State.sequence(List.fill(n)(g.sample)))
 
   // Exercise 8.7
-  def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] = ???
+  def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] = boolean.flatMap(v => if (v) g1 else g2)
 
   // Exercise 8.8
-  def weighted[A](g1: (Gen[A], Double), g2: (Gen[A], Double)): Gen[A] = ???
+  def weighted[A](g1: (Gen[A], Double), g2: (Gen[A], Double)): Gen[A] =
+    Gen(State(RNG.double)).flatMap(v => if (v < (g1._2 / (g1._2 + g2._2))) g1._1 else g2._1)
 
   // Exercise 8.12
-  def listOf[A](g: Gen[A]): SGen[List[A]] = ???
+  def listOf[A](g: Gen[A]): SGen[List[A]] = SGen { n => g.listOfN(n) }
 
   // Exercise 8.13
-  def listOf1[A](g: Gen[A]): SGen[List[A]] = ???
+  def listOf1[A](g: Gen[A]): SGen[List[A]] = SGen { n => g.listOfN(1 max n) }
 
   object ** {
     def unapply[A, B](p: (A, B)) = Some(p)
@@ -130,17 +145,18 @@ case class Gen[+A](sample: State[RNG, A]) {
   def map[B](f: A => B): Gen[B] = Gen(sample.map(f))
 
   // Exercise 8.6
-  def flatMap[B](f: A => Gen[B]): Gen[B] = ???
+  def flatMap[B](f: A => Gen[B]): Gen[B] = Gen(sample.flatMap(f(_).sample))
 
   def listOfN(size: Int): Gen[List[A]] = Gen.listOfN(size, this)
 
   // Exercise 8.6
-  def listOfN(size: Gen[Int]): Gen[List[A]] = ???
+  def listOfN(size: Gen[Int]): Gen[List[A]] = size flatMap (l => this.listOfN(l))
 
   // Exercise 8.10
-  def unsized: SGen[A] = ???
+  def unsized: SGen[A] = SGen(_ => this)
 
-  def map2[B, C](g: Gen[B])(f: (A, B) => C): Gen[C] = ???
+  def map2[B, C](g: Gen[B])(f: (A, B) => C): Gen[C] =
+    Gen(sample.map2(g.sample)(f))
 
   def **[B](g: Gen[B]): Gen[(A, B)] = (this map2 g)((_, _))
 
@@ -148,14 +164,14 @@ case class Gen[+A](sample: State[RNG, A]) {
 
 case class SGen[+A](forSize: Int => Gen[A]) {
   // Exercise 8.11
-  def apply(n: Int): Gen[A] = ???
+  def apply(n: Int): Gen[A] = forSize(n)
 
   // Exercise 8.11
-  def map[B](f: A => B): SGen[B] = ???
+  def map[B](f: A => B): SGen[B] = SGen { (i: Int) => forSize(i).map(f) }
 
   // Exercise 8.11
-  def flatMap[B](f: A => SGen[B]): SGen[B] = ???
+  def flatMap[B](f: A => SGen[B]): SGen[B] = SGen { i => forSize(i).flatMap(f(_).forSize(i)) }
 
   // Exercise 8.11
-  def **[B](s2: SGen[B]): SGen[(A, B)] = ???
+  def **[B](s2: SGen[B]): SGen[(A, B)] = SGen { n => apply(n) ** s2(n) }
 }
