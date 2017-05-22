@@ -1,7 +1,7 @@
 package nl.hugo.redbook.ch8
 
 import nl.hugo.redbook.ch6.RNG
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 import org.scalatest.Inspectors._
 
 class Test8_06 extends WordSpec with Matchers {
@@ -20,10 +20,11 @@ class Test8_06 extends WordSpec with Matchers {
     }
 
     "produce a listOfN" in {
-      val gen = Gen.choose(20, 30).listOfN(10)
+      val len = Gen.choose(10, 20)
+      val gen = Gen.choose(20, 30).listOfN(len)
       for (n <- 0 to 1000) {
         val (lst, _) = gen.sample.run(RNG.Simple(n))
-        lst.size should be(10)
+        lst.size should { be >= 10 and be < 20 }
         lst.distinct.size should be > 1
         forAll(lst) { x => x should (be >= 20 and be < 30) }
       }
