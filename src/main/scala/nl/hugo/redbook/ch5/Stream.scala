@@ -131,6 +131,11 @@ trait Stream[+A] {
       State(ns, cons(ns, state.results))
     }).results
   }
+
+  // special case of `zipWith`
+  def zip[B](s2: Stream[B]): Stream[(A, B)] =
+    zipWith(s2)((_, _))
+
 }
 
 case object Empty extends Stream[Nothing]
