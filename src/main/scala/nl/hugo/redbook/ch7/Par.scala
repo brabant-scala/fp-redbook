@@ -133,7 +133,7 @@ object Par {
     val ab = map2(pa,pb)((_, _))
     val cd = map2(pc,pd)((_, _))
     val abcd = map2(ab, cd)((_, _))
-    map2(abcd, pe){ case ((a,b), (c, d), e) => f(a, b, c, d, e) }
+    map2(abcd, pe){ case (((a,b), (c, d)), e) => f(a, b, c, d, e) }
   }
 
   def equal[A](e: ExecutorService)(p: Par[A], p2: Par[A]): Boolean =
