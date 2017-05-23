@@ -32,6 +32,8 @@ object RNG {
       (f(a), rng2)
     }
 
+  val boolean: Rand[Boolean] = map(int)(_ % 2 == 0)
+
   // Exercise 6.01
   def nonNegativeInt(rng: RNG): (Int, RNG) = {
     val (n, next) = rng.nextInt

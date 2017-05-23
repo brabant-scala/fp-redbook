@@ -279,6 +279,10 @@ trait Stream[+A] {
       val next = f(a, prev._1)
       (next, cons(next, prev._2))
     }._2
+
+  // special case of `zipWith`
+  def zip[B](s2: Stream[B]): Stream[(A, B)] =
+    zipWith(s2)((_, _))
 }
 
 case object Empty extends Stream[Nothing]
