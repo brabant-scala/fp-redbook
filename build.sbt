@@ -41,18 +41,16 @@ lazy val projectSettings = buildSettings ++ formattingSettings
 
 val typesafeRepo = "Typesafe Releases" at "http://dl.bintray.com/typesafe/ivy-releases"
 
-val specs2Core = "org.specs2" %% "specs2-core" % "2.4.17" % "test"
-val specs2Matcher = "org.specs2" %% "specs2-matcher" % "2.4.17" % "test"
-val scalaTest = "org.scalatest" %% "scalatest" % "2.2.6" % "test"
-val scalactic = "org.scalactic" %% "scalactic" % "2.2.6" % "test"
-
-libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
+val scalaTest = "org.scalatest" %% "scalatest" % "2.2.6" % Test
+val scalactic = "org.scalactic" %% "scalactic" % "2.2.6" % Test
+val scalaCheck = "org.scalacheck" %% "scalacheck" % "1.13.4"
 
 // dependencies
 
 val dependencies = Seq(
   scalaTest,
-  scalactic
+  scalactic,
+  scalaCheck
 )
 
 // projects
