@@ -1,8 +1,9 @@
 package nl.hugo.redbook.ch9
 
-import org.scalacheck.{ Gen, Prop }
+import org.scalacheck.{Gen, Prop}
 
-import scala.language.{ higherKinds, implicitConversions }
+import scala.language.{higherKinds, implicitConversions}
+import scala.util.matching.Regex
 
 // A parser is a function that analyses a piece of text and tries to extract some information from this. This can be
 // Actual information (e.g. an Integer or a string), or structural information (e.g. JSON object, JSON list).. When
@@ -17,7 +18,7 @@ import scala.language.{ higherKinds, implicitConversions }
 //   type Parser[A] = Location => Either[Failure, Success[A]]
 // Where these type encapsulate that information.
 
-trait Parsers[Parser[+_]] {
+trait Parsers[Parser[+ _]] {
   self =>
 
   def run[A](p: Parser[A])(input: String): Either[ParseError, A]
@@ -29,7 +30,18 @@ trait Parsers[Parser[+_]] {
 
   implicit def asStringParser[A](a: A)(implicit f: A => Parser[String]): ParserOps[String] = ParserOps(f(a))
 
-  def or[A](s1: Parser[A], s2: Parser[A]): Parser[A]
+  implicit def regex(r: Regex): Parser[String]
+
+  // Exercise 9.6
+  def toNumber:Parser[Int] =
+    for {
+      v <- "[0-9]+".r
+      n = v.toInt
+      l = listOfN(n, "a")
+    } yield v.toInt
+
+  // Exercise 9.5
+  def or[A](s1: Parser[A], s2: => Parser[A]): Parser[A]
 
   // Exercise 9.4
   def listOfN[A](n: Int, p: Parser[A]): Parser[List[A]] =
@@ -41,23 +53,38 @@ trait Parsers[Parser[+_]] {
   // Exercise 9.3
   def many[A](p: Parser[A]): Parser[List[A]] = p.map2(p.many)(_ :: _) or succeed(List.empty)
 
-  def map[A, B](a: Parser[A])(f: A => B): Parser[B]
+  // Exercise 9.8
+  def map[A, B](a: Parser[A])(f: A => B): Parser[B] = a.flatMap( b => succeed(f(b)) )
 
   // This is the parser's variant of 'unit'
   def succeed[A](a: A): Parser[A] = string("") map (_ => a)
 
   def slice[A](p: Parser[A]): Parser[String]
 
-  def product[A, B](p: Parser[A], p2: Parser[B]): Parser[(A, B)]
+  //Exercise 9.6
+  def map2[A,B,C](p: Parser[A], p2: => Parser[B])(f: (A,B) => C): Parser[C] =
+    for {
+      a <- p
+      b <- p2
+    } yield f(a,b)
 
-  // Exercise 9.1
-  def map2[A, B, C](p: Parser[A], p2: Parser[B])(f: (A, B) => C): Parser[C] = (p ** p2) map f.tupled
+  //Exercise 9.6
+  def product[A, B](p: Parser[A], p2: Parser[B]): Parser[(A, B)] =
+    for {
+      a <- p
+      b <- p2
+    } yield (a,b)
+
+  // Exercise 9.1 & 9.5
+  def map2_9_1[A, B, C](p: Parser[A], p2: => Parser[B])(f: (A, B) => C): Parser[C] = (p ** p2) map f.tupled
 
   // Exercise 9.1
   def many1[A](p: Parser[A]): Parser[List[A]] = p.map2(p.many)(_ :: _)
 
+  def flatMap[A, B](p: Parser[A])(f: A => Parser[B]): Parser[B]
+
   implicit class ParserOps[A](p: Parser[A]) {
-    def |[B >: A](p2: Parser[B]): Parser[B] = self.or(p, p2)
+    def |[B >: A](p2: => Parser[B]): Parser[B] = self.or(p, p2)
 
     def or[B >: A](p2: => Parser[B]): Parser[B] = self.or(p, p2)
 
@@ -75,7 +102,9 @@ trait Parsers[Parser[+_]] {
 
     def **[B](p2: Parser[B]): Parser[(A, B)] = self.product(p, p2)
 
-    def map2[B, C](p2: Parser[B])(f: (A, B) => C): Parser[C] = self.map2(p, p2)(f)
+    def map2[B, C](p2: => Parser[B])(f: (A, B) => C): Parser[C] = self.map2(p, p2)(f)
+
+    def flatMap[B](f: A => Parser[B]): Parser[B] = self.flatMap(p)(f)
   }
 
   object Laws {
@@ -144,7 +173,7 @@ case class Location(input: String, offset: Int = 0) {
 }
 
 case class ParseError(
-  stack: List[(Location, String)] = List(),
-  otherFailures: List[ParseError] = List()
-) {
+                       stack: List[(Location, String)] = List(),
+                       otherFailures: List[ParseError] = List()
+                     ) {
 }
