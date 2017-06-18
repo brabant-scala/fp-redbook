@@ -2,9 +2,10 @@ package nl.hugo.redbook.ch9
 
 import java.util.regex.Pattern
 
-import org.scalacheck.{Gen, Prop}
+import nl.hugo.redbook.ch9.MyParserTypes._
+import org.scalacheck.{ Gen, Prop }
 
-import scala.language.{higherKinds, implicitConversions}
+import scala.language.{ higherKinds, implicitConversions }
 import scala.util.matching.Regex
 
 // A parser is a function that analyses a piece of text and tries to extract some information from this. This can be
@@ -20,7 +21,7 @@ import scala.util.matching.Regex
 //   type Parser[A] = Location => Either[Failure, Success[A]]
 // Where these type encapsulate that information.
 
-trait Parsers[Parser[+ _]] {
+trait Parsers[Parser[+_]] {
   self =>
 
   def run[A](p: Parser[A])(input: String): Either[ParseError, A]
@@ -59,7 +60,7 @@ trait Parsers[Parser[+ _]] {
   def map[A, B](a: Parser[A])(f: A => B): Parser[B] = a.flatMap(b => succeed(f(b)))
 
   // This is the parser's variant of 'unit'
-  def succeed[A](a: A): Parser[A] = string("") map (_ => a)
+  def succeed[A](a: A): Parser[A]
 
   def slice[A](p: Parser[A]): Parser[String]
 
@@ -144,6 +145,22 @@ trait Parsers[Parser[+ _]] {
   def token[A](p: Parser[A]): Parser[A] =
     p |> whiteSpaces
 
+  def label[A](msg: String)(p: Parser[A]): Parser[A]
+
+  def errorLocation(e: ParseError): Location
+
+  def errorMessage(e: ParseError): String
+
+  def scope[A](msg: String)(p: Parser[A]): Parser[A]
+
+  def attempt[A](p: Parser[A]): Parser[A]
+
+  // Exercise 9.11
+  def lastestError[A](p: Parser[A]): Parser[A]
+
+  // Exercise 9.11
+  def furthestError[A](p: Parser[A]): Parser[A]
+
   implicit class ParserOps[A](p: Parser[A]) {
     def |[B >: A](p2: => Parser[B]): Parser[B] = self.or(p, p2)
 
@@ -225,6 +242,14 @@ trait Parsers[Parser[+ _]] {
     val many1Law: Prop = Prop.forAll(Gen.choose(1, 100), Gen.alphaNumChar) { (n: Int, c: Char) =>
       run(char(c).many1)(c.toString * n) == Right(List.fill(n)(c.toString))
     }
+
+    def labelLaw[A](p: Parser[A]): Prop = Prop.forAll {
+      (input: String, msg: String) =>
+        run(label(msg)(p))(input) match {
+          case Left(e) => errorMessage(e) == msg
+          case _ => true
+        }
+    }
   }
 
 }
@@ -232,7 +257,10 @@ trait Parsers[Parser[+ _]] {
 case class Location(input: String, offset: Int = 0) {
 
   lazy val line: Int = input.slice(0, offset + 1).count(_ == '\n') + 1
-  lazy val col: Int = input.slice(0, offset + 1).reverse.indexOf('\n')
+  lazy val col: Int = input.slice(0, offset + 1).reverse.indexOf('\n') match {
+    case -1 => offset + 1
+    case lineStart => offset - lineStart
+  }
 
   def toError(msg: String): ParseError =
     ParseError(List((this, msg)))
@@ -240,15 +268,23 @@ case class Location(input: String, offset: Int = 0) {
   def advanceBy(n: Int): Location = copy(offset = offset + n)
 
   /* Returns the line corresponding to this location */
-  def currentLine: String =
+  lazy val currentLine: String =
     if (input.length > 1) input.lines.drop(line - 1).next
     else ""
+
+  def startsWith(s: String): Boolean =
+    input.startsWith(s, offset)
+
+  lazy val current: String = input.substring(offset)
+
+  def slice(n: Int): String = input.substring(offset, offset + n)
 }
 
 case class ParseError(
-                       stack: List[(Location, String)] = List(),
-                       otherFailures: List[ParseError] = List()
-                     ) {
+  stack: List[(Location, String)] = List(),
+  otherFailures: List[ParseError] = List()
+) {
+
 }
 
 trait JSON
@@ -267,7 +303,7 @@ object JSON {
 
   case class JObject(get: Map[String, JSON]) extends JSON
 
-  def jsonParser[Err, Parser[+ _]](P: Parsers[Parser]): Parser[JSON] = {
+  def jsonParser[Err, Parser[+_]](P: Parsers[Parser]): Parser[JSON] = {
     import P._
 
     // A value can be a string in double quotes, or a number, or true or false or null, or an object or an array.
@@ -295,10 +331,72 @@ object JSON {
       (value sep "," map (vs => JArray(vs.toIndexedSeq)))
         .surround("[", "]")
     }
+
     // JSON is built on two structures:
     //  * A collection of name/value pairs. In various languages, this is realized as an object, record, struct,
     //    dictionary, hash table, keyed list, or associative array.
     //  * An ordered list of values. In most languages, this is realized as an array, vector, list, or sequence.
     root(obj | array)
   }
+}
+
+object MyParserTypes {
+  type Parser[+A] = Location => Result[A]
+
+  trait Result[+A]
+
+  case class Success[+A](get: A, charsConsumed: Int) extends Result[A]
+
+  case class Failure(get: ParseError) extends Result[Nothing]
+
+}
+
+object MyParsers extends Parsers[Parser] {
+
+  // Exercise 9.13
+  override def string(s: String): Parser[String] =
+    (input: Location) =>
+      if (input.startsWith(s))
+        Success(s, s.length)
+      else
+        Failure(input.toError(s"Expected: $s"))
+
+  // Exercise 9.12
+  override def regex(r: Regex): Parser[String] =
+    (input: Location) =>
+      r.findFirstIn(input.current) match {
+        case Some(s) => Success(s, s.length)
+        case None => Failure(input.toError(s"Did not match: $r"))
+      }
+
+  // Exercise 9.12
+  override def succeed[A](a: A): Parser[A] = _ => Success(a, 0)
+
+  // Exercise 9.12
+  override def slice[A](p: Parser[A]): Parser[String] =
+    (input: Location) =>
+      p(input) match {
+        case Success(_, n) => Success(input.slice(n), n)
+        case f @ Failure(_) => f
+      }
+
+  override def attempt[A](p: Parser[A]): Parser[A] = ???
+
+  override def errorLocation(e: ParseError): Location = ???
+
+  override def errorMessage(e: ParseError): String = ???
+
+  override def flatMap[A, B](p: Parser[A])(f: (A) => Parser[B]): Parser[B] = ???
+
+  override def furthestError[A](p: Parser[A]): Parser[A] = ???
+
+  override def label[A](msg: String)(p: Parser[A]): Parser[A] = ???
+
+  override def lastestError[A](p: Parser[A]): Parser[A] = ???
+
+  override def or[A](s1: Parser[A], s2: => Parser[A]): Parser[A] = ???
+
+  override def run[A](p: Parser[A])(input: String): Either[ParseError, A] = ???
+
+  override def scope[A](msg: String)(p: Parser[A]): Parser[A] = ???
 }
