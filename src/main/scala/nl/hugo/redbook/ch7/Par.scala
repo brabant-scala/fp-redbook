@@ -46,28 +46,29 @@ object Par {
   // exercise 7.3
   def map2WhileRespectingContracts[A, B, C](pa: Par[A], pb: Par[B])(f: (A, B) => C): Par[C] =
     es => new Future[C] {
+      private val fa = pa(es)
+      private val fb = pb(es)
       private var value: Option[C] = None
-      private var cancelled = new AtomicBoolean(false)
-      private var running = new AtomicBoolean(false)
       def isDone = value.isDefined
+      def get = eval(f(fa.get, fb.get))
       def get(timeout: Long, units: TimeUnit): C = {
-        checked(running.set(true))
         val start = System.currentTimeMillis
-        val a = pa(es).get(timeout, units)
+        val a = fa.get(timeout, units)
         val elapsed = System.currentTimeMillis - start
         val left = units.convert(timeout, TimeUnit.MILLISECONDS) - elapsed
-        val b = checked(pb(es).get(left, TimeUnit.MILLISECONDS))
-        val c = checked(f(a, b))
-        value = checked(Some(c))
-        c
+        val b = checked(fb.get(left, TimeUnit.MILLISECONDS))
+        eval(f(a, b)) // TODO: timeout if f takes too long
       }
-      def get = get(7, TimeUnit.DAYS)
-      def isCancelled = cancelled.get
+      def isCancelled = fa.isCancelled || fb.isCancelled()
       def cancel(evenIfRunning: Boolean) =
-        if (running.get && !evenIfRunning) false
-        else {
-          cancelled.set(true)
-          true
+        fa.cancel(evenIfRunning) & fb.cancel(evenIfRunning) // single & => no short-circuit
+      private def eval(calc: => C): C =
+        value match {
+          case Some(c) => c
+          case None =>
+            val c = calc
+            value = Some(c)
+            c
         }
       private def checked[A](a: => A): A =
         if (isCancelled) throw new CancellationException
@@ -121,7 +122,7 @@ object Par {
 
   // exercise 7.5 - linear, sequential
   def sequence_1[A](l: List[Par[A]]): Par[List[A]] =
-    l.foldRight(unit[List[A]](Nil)) { (p, ps) =>
+    l.foldRight(unit(List.empty[A])) { (p, ps) =>
       map2(p, ps)(_ :: _)
     }
 
@@ -141,6 +142,7 @@ object Par {
     map(go(l.toVector))(_.toList)
   }
 
+  // TODO: write tests
   // experiment for section 7.3 (1st bullet)
   def parReduce[A](as: IndexedSeq[A])(f: (A, A) => A): Par[A] =
     if (as.length <= 1)
@@ -149,6 +151,10 @@ object Par {
       val (l, r) = as.splitAt(as.length / 2)
       map2(fork(parReduce(l)(f)), fork(parReduce(r)(f)))(f)
     }
+
+  // experiment for section 7.3 (1st bullet)
+  def parSum_2(is: IndexedSeq[Int]): Par[Int] =
+    parReduce(is)(_ + _)
 
   // experiment for section 7.3 (1st bullet)
   def parMax(is: IndexedSeq[Int]): Par[Int] =

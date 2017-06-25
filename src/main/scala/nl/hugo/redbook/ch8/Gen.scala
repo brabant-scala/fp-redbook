@@ -171,6 +171,12 @@ object Gen {
   def boolean_2: Gen[Boolean] =
     int.map(_ % 2 == 0)
 
+  def boolean_3: Gen[Boolean] =
+    of(RNG.boolean)
+
+  def boolean_4: Gen[Boolean] =
+    choose(0, 2).map(_ == 0)
+
   def of[A](f: RNG.Rand[A]): Gen[A] =
     Gen(State(f))
 
@@ -182,7 +188,13 @@ object Gen {
 
   // Exercise 8.5
   def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] =
+    listOfN_1(n, g)
+
+  def listOfN_1[A](n: Int, g: Gen[A]): Gen[List[A]] =
     Gen(State.sequence(List.fill(n)(g.sample)))
+
+  def listOfN_2[A](n: Int, g: Gen[A]): Gen[List[A]] =
+    Gen(g.sample.map2(listOfN(n - 1, g).sample)(_ :: _))
 
   // Exercise 8.7
   def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] =
@@ -198,11 +210,23 @@ object Gen {
 
   // Exercise 8.12
   def listOf[A](g: Gen[A]): SGen[List[A]] =
+    listOf_1(g)
+
+  def listOf_1[A](g: Gen[A]): SGen[List[A]] =
     SGen(n => Gen.listOfN(n, g))
+
+  def listOf_2[A](g: Gen[A]): SGen[List[A]] =
+    SGen(n => g.listOfN(n))
 
   // Exercise 8.13
   def listOf1[A](g: Gen[A]): SGen[List[A]] =
+    listOf1_1(g)
+
+  def listOf1_1[A](g: Gen[A]): SGen[List[A]] =
     SGen(n => listOfN(n max 1, g))
+
+  def listOf1_2[A](g: Gen[A]): SGen[List[A]] =
+    SGen(n => listOfN(math.abs(n) + 1, g))
 
   object ** {
     def unapply[A, B](p: (A, B)) = Some(p)
@@ -222,7 +246,19 @@ case class Gen[+A](sample: State[RNG, A]) {
 
   // Exercise 8.6
   def listOfN(size: Gen[Int]): Gen[List[A]] =
+    listOfN(size)
+
+  def listOfN_1(size: Gen[Int]): Gen[List[A]] =
     size.flatMap(n => Gen.listOfN(n, this))
+
+  def listOfN_2(size: Gen[Int]): Gen[List[A]] =
+    size.flatMap(n => listOfN(n))
+
+  def listOfN_3(size: Gen[Int]): Gen[List[A]] =
+    for {
+      s <- size
+      l <- listOfN(s)
+    } yield l
 
   // Exercise 8.10
   def unsized: SGen[A] =

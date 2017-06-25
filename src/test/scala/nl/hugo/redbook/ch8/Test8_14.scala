@@ -13,11 +13,10 @@ class Test8_14 extends WordSpec with Matchers {
       val smallInt = Gen.choose(-10, 10)
       val sortedProp = Prop.forAll(Gen.listOf(smallInt)) { ns =>
         val sorted = ns.sorted
-        sorted.isEmpty || (
-          (sorted.size == ns.size) &&
+        // TODO: check multiplicity
+        (sorted.size == ns.size) &&
           sorted.forall(ns.contains) &&
-          sorted.zip(sorted.tail).forall { case (l, r) => l <= r }
-        )
+          (sorted.isEmpty || sorted.zip(sorted.tail).forall { case (l, r) => l <= r }) // TODO: use sliding?
       }
 
       sortedProp.run(100, 1000, rng) should be(Prop.Passed)

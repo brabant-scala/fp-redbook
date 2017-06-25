@@ -10,6 +10,9 @@ object Exercise18 {
   def takeWhileProp(f: Int => Boolean) = Prop.forAll(Gen.listOf(smallInt)) { ns =>
     val take = ns.takeWhile(f)
     val drop = ns.dropWhile(f)
-    take.forall(f) && (take.size <= ns.size) && (take ::: drop == ns)
+    take.forall(f) &&
+      !drop.headOption.exists(f) &&
+      (take.size <= ns.size) &&
+      (take ::: drop == ns)
   }
 }

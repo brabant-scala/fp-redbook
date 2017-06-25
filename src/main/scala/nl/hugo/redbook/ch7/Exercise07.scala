@@ -3,7 +3,7 @@ package nl.hugo.redbook.ch7
 object Exercise07 {
 
   // exercise 7.7
-  // (1) map(y)(id) == id =>
+  // (1) map(y)(id) == y =>
   // (2) map(unit(x))(f) == unit(f(x))
   // (3) y = unit(x)
   // (4) h = f compose g
