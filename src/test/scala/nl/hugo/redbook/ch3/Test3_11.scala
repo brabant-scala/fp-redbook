@@ -7,7 +7,7 @@ class Test3_11 extends WordSpec with Matchers {
 
   "sum" should {
 
-    "calculate the sum  ofall elements of a list" in {
+    "calculate the sum of all elements of a list" in {
       sum(List(1, 2, 3, 4, 5)) should be(List.sum(List(1, 2, 3, 4, 5)))
     }
 
