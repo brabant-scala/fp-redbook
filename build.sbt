@@ -43,7 +43,7 @@ val typesafeRepo = "Typesafe Releases" at "http://dl.bintray.com/typesafe/ivy-re
 
 val scalaTest = "org.scalatest" %% "scalatest" % "2.2.6" % Test
 val scalactic = "org.scalactic" %% "scalactic" % "2.2.6" % Test
-val scalaCheck = "org.scalacheck" %% "scalacheck" % "1.13.4"
+val scalaCheck = "org.scalacheck" %% "scalacheck" % "1.12.6"
 
 // dependencies
 

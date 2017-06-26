@@ -3,9 +3,9 @@ package nl.hugo.redbook.ch9
 import java.util.regex.Pattern
 
 import nl.hugo.redbook.ch9.MyParserTypes._
-import org.scalacheck.{Gen, Prop}
+import org.scalacheck.{ Gen, Prop }
 
-import scala.language.{higherKinds, implicitConversions}
+import scala.language.{ higherKinds, implicitConversions }
 import scala.util.matching.Regex
 
 // A parser is a function that analyses a piece of text and tries to extract some information from this. This can be
@@ -21,7 +21,7 @@ import scala.util.matching.Regex
 //   type Parser[A] = Location => Either[Failure, Success[A]]
 // Where these type encapsulate that information.
 
-trait Parsers[Parser[+ _]] {
+trait Parsers[Parser[+_]] {
   self =>
 
   def run[A](p: Parser[A])(input: String): Either[ParseError, A]
@@ -199,23 +199,23 @@ trait Parsers[Parser[+ _]] {
 
     val stringParserLaw: Prop = Prop.forAll { (s: String) => run(s)(s) == Right(s) }
 
-    val orLaw: Prop = Prop.forAll { (sl: String, sr: String) => run(sl or sr)(sl) == Right(sl) } &&
-      Prop.forAll { (sl: String, sr: String) => run(sl or sr)(sr) == Right(sr) }
+    val nonEmptyAlphaStr: Gen[String] = Gen.alphaStr.suchThat(!_.isEmpty)
+
+    val orLaw: Prop =
+      Prop.forAll(nonEmptyAlphaStr, nonEmptyAlphaStr) { (sl: String, sr: String) => run(sl or sr)(sl) == Right(sl) } &&
+        Prop.forAll(nonEmptyAlphaStr, nonEmptyAlphaStr) { (sl: String, sr: String) => run(sl or sr)(sr) == Right(sr) }
 
     val smallInteger: Gen[Int] = Gen.choose(0, 100)
 
-    val nonEmptyAlphaNumStr: Gen[String] = Gen.alphaNumStr.suchThat(!_.isEmpty)
-
-    val listOfNLaw: Prop = Prop.forAll(Gen.alphaNumStr, smallInteger.suchThat(_ >= 1)) {
+    val listOfNLaw: Prop = Prop.forAll(Gen.alphaStr, smallInteger.suchThat(_ >= 1)) {
       (v: String, n: Int) =>
         run(v.listOfN(n))(v * n) == Right(List.fill(n)(v))
     }
 
-    val manyLaw: Prop = Prop.forAll(nonEmptyAlphaNumStr, smallInteger) {
+    val manyLaw: Prop = Prop.forAll(nonEmptyAlphaStr, smallInteger) {
       (v: String, n: Int) =>
         run(v.many)(v * n) == Right(List.fill(n)(v))
     }
-
 
     def equal[A](p1: Parser[A], p2: Parser[A])(in: Gen[String]): Prop =
       Prop.forAll(in)(s => run(p1)(s) == run(p2)(s))
@@ -237,9 +237,9 @@ trait Parsers[Parser[+ _]] {
       run(((a ** b) ** c).map(flattenL))(a + b + c) == run((a ** (b ** c)).map(flattenR))(a + b + c)
     }
 
-    val many1Law: Prop = Prop.forAll(smallInteger.suchThat(_ >= 1), nonEmptyAlphaNumStr) { (n: Int, s: String) =>
+    val many1Law: Prop = Prop.forAll(smallInteger.suchThat(_ >= 1), nonEmptyAlphaStr) { (n: Int, s: String) =>
       run(s.many1)(s * n) == Right(List.fill(n)(s.toString))
-    } && Prop.forAll(nonEmptyAlphaNumStr) { (s: String) =>
+    } && Prop.forAll(nonEmptyAlphaStr) { (s: String) =>
       run(s.many1)("").isLeft
     }
 
@@ -251,7 +251,7 @@ trait Parsers[Parser[+ _]] {
         }
     }
 
-    val sliceLaw: Prop = Prop.forAll(nonEmptyAlphaNumStr, Gen.choose(1, 5)) { (s: String, n: Int) =>
+    val sliceLaw: Prop = Prop.forAll(nonEmptyAlphaStr, Gen.choose(1, 5)) { (s: String, n: Int) =>
       run(s.many.slice)(s * n) == Right(s * n)
     }
   }
@@ -296,7 +296,6 @@ case class ParseError(stack: List[(Location, String)] = List(), otherFailures: L
   def latest: Option[(Location, String)] =
     stack.lastOption
 
-
 }
 
 trait JSON
@@ -315,7 +314,7 @@ object JSON {
 
   case class JObject(get: Map[String, JSON]) extends JSON
 
-  def jsonParser[Err, Parser[+ _]](P: Parsers[Parser]): Parser[JSON] = {
+  def jsonParser[Err, Parser[+_]](P: Parsers[Parser]): Parser[JSON] = {
     import P._
 
     // A value can be a string in double quotes, or a number, or true or false or null, or an object or an array.
@@ -415,18 +414,18 @@ object MyParser extends Parsers[Parser] {
     (input: Location) =>
       p(input) match {
         case Success(_, n) => Success(input.slice(n), n)
-        case f@Failure(_, _) => f
+        case f @ Failure(_, _) => f
       }
 
   override def attempt[A](p: Parser[A]): Parser[A] =
-    s=> p(s).uncommit
+    s => p(s).uncommit
 
   override def flatMap[A, B](p: Parser[A])(g: (A) => Parser[B]): Parser[B] =
     s => p(s) match {
       case Success(v, n) => g(v)(s.advanceBy(n))
         .addCommit(n != 0)
         .advanceSuccess(n)
-      case f@Failure(_, _) => f
+      case f @ Failure(_, _) => f
     }
 
   override def label[A](msg: String)(p: Parser[A]): Parser[A] =
