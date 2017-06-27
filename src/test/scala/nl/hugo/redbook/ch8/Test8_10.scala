@@ -1,9 +1,9 @@
 package nl.hugo.redbook.ch8
 
 import nl.hugo.redbook.ch6.RNG
-import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
+import org.scalatest.{ BeforeAndAfterEach, Matchers, WordSpec }
 
-class Test8_10 extends WordSpec with Matchers{
+class Test8_10 extends WordSpec with Matchers {
   "Gen.unsized" should {
     "return the correct value" in {
       val positiveInts = Gen.choose(0, Int.MaxValue)
