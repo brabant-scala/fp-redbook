@@ -11,6 +11,7 @@ import java.util.concurrent.{ ExecutorService, Executors }
 // 8.1
 //val prop = forall(intList)(il => il.sum == il.reverse.sum) &&
 //           forall(intList)(il => il.sum == il.foldLeft(0)(_ + _))
+//           forall(intList)((l1,l2) => l1.sum + l2.sum == (l1++l2).sum)
 
 //8.2
 //
@@ -169,7 +170,8 @@ case class Gen[+A](sample: State[RNG, A]) {
   def listOfN(size: Int): Gen[List[A]] = Gen.listOfN(size, this)
 
   // Exercise 8.6
-  def listOfN(size: Gen[Int]): Gen[List[A]] = Gen(size.flatMap(n => listOfN(n)).sample)
+  def listOfN(size: Gen[Int]): Gen[List[A]] = //Gen(size.flatMap(n => listOfN(n)).sample) // size was al een Gen, dus kan korter
+    size flatMap (l => this.listOfN(l))
 
   // Exercise 8.10
   def unsized: SGen[A] = SGen(_ => this)
