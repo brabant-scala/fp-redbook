@@ -21,35 +21,37 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
   def slice[A](p: Parser[A]): Parser[String]
 
   // Exercise 9.1
-  def productUsingMap2[A, B](pa: Parser[A], pb: => Parser[B]): Parser[(A, B)] = ???
+  def productUsingMap2[A, B](pa: Parser[A], pb: => Parser[B]): Parser[(A, B)] =
+    map2(pa, pb)((a,b) => (a,b))
 
   // Exercise 9.1
-  def map2UsingProduct[A, B, C](pa: Parser[A], pb: => Parser[B])(f: (A, B) => C): Parser[C] = ???
+  def map2UsingProduct[A, B, C](pa: Parser[A], pb: => Parser[B])(f: (A, B) => C): Parser[C] =
+    product(pa, pb).map(ab => f(ab))
 
   // Exercise 9.2
-  def many1[A](p: Parser[A]): Parser[List[A]] = ???
+  def many1[A](p: Parser[A]): Parser[List[A]] = product(p, many(p)).map { case (a, listA) => a +: listA }
 
   // Exercise 9.3
-  def many[A](p: Parser[A]): Parser[List[A]] = ???
+  def many[A](p: Parser[A]): Parser[List[A]] = or(map2(p, many(p)){ case (a, listA) => a +: listA }, succeed(List.empty))
 
   // Exercise 9.4
-  def listOfN[A](n: Int, p: Parser[A]): Parser[List[A]] = ???
+  def listOfN[A](n: Int, p: Parser[A]): Parser[List[A]] = map2(p, listOfN(n-1, p)){ case (a, listA) => a +: listA }
 
   // Exercise 9.5
-  def nonStrict[A](p: => Parser[A]): Parser[A] = ???
+  def nonStrict[A](p: => Parser[A]): Parser[A] = p
 
   def flatMap[A, B](p: Parser[A])(f: A => Parser[B]): Parser[B]
 
   def regex(r: Regex): Parser[String]
 
   // Exercise 9.7 - using flatMap
-  def product[A, B](pa: Parser[A], pb: => Parser[B]): Parser[(A, B)] = ???
+  def product[A, B](pa: Parser[A], pb: => Parser[B]): Parser[(A, B)] = pa.flatMap(a => pb.map(b => (a, b)))
 
   // Exercise 9.7
-  def map2[A, B, C](pa: Parser[A], pb: => Parser[B])(f: (A, B) => C): Parser[C] = ???
+  def map2[A, B, C](pa: Parser[A], pb: => Parser[B])(f: (A, B) => C): Parser[C] = pa.flatMap(a => pb.map(b => f(a,b)))
 
   // Exercise 9.8
-  def map[A, B](p: Parser[A])(f: A => B): Parser[B] = ???
+  def map[A, B](p: Parser[A])(f: A => B): Parser[B] = p.flatMap(a => succeed(f(a)))
 
   def label[A](msg: String)(p: Parser[A]): Parser[A]
 

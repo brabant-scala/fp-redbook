@@ -20,5 +20,11 @@ object JSON {
   }
 
   // Exercise 9.9
-  def jsonParser[Parser[+_]](p: Parsers[Parser]): Parser[JSON] = ???
+  def jsonParser[Parser[+_]](p: Parsers[Parser]): Parser[JSON] = {
+    import p._
+    val spaces = char(' ').many.slice
+    val obj = regex("""{\s*"[^"]+"\s*:[^,}]+}""".r).slice
+    val array = regex("""\s*[\s*"[^"]+\s*""".r).slice
+    
+  }
 }
