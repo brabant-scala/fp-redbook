@@ -1,7 +1,7 @@
 package nl.hugo.redbook.ch8
 
 import nl.hugo.redbook.ch6.RNG
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 import org.scalatest.Inspectors._
 
 class Test8_06 extends WordSpec with Matchers {

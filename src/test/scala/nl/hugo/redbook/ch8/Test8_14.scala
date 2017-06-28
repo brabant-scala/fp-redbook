@@ -1,7 +1,7 @@
 package nl.hugo.redbook.ch8
 
 import nl.hugo.redbook.ch6.RNG
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 import Prop._
 
 import scala.collection.mutable
@@ -14,51 +14,18 @@ class Test8_14 extends WordSpec with Matchers {
 
       // Exercise 8.14
       // val sortedProp: Prop = ???
-      val smallInt = Gen.choose(-10,10)
+      val smallInt = Gen.choose(-10, 10)
       val sortedProp = Prop.forAll(Gen.listOf(smallInt)) { ns =>
         val nss = sortingFunction(ns)
         // We specify that every sorted list is either empty, has one element,
         // or has no two consecutive elements `(a,b)` such that `a` is greater than `b`.
         nss.isEmpty || nss.tail.isEmpty || !nss.zip(nss.tail).exists {
-          case (a,b) => a > b
+          case (a, b) => a > b
         } &&
           // Also, the sorted list should have all the elements of the input list,
           !ns.exists(!nss.contains(_)) &&
           // and it should have no elements not in the input list.
           !nss.exists(!ns.contains(_))
-      }
-
-      sortedProp.run(100, 1000, rng)
-
-    }
-
-    def runTestWith(sortingFunction: List[Int] => List[Int]) = {
-      val rng = RNG.Simple(System.nanoTime())
-
-      def equalMaps(x: Map[Int, Int], y: Map[Int, Int]): Boolean = {
-        x.foldLeft(true){
-          case (acc, (k, v)) => acc && y.getOrElse(k, v + 1)==v
-        } &&
-        y.foldLeft(true){
-          case (acc, (k, v)) => acc && x.getOrElse(k, v + 1)==v
-        }
-      }
-
-      // Exercise 8.14
-      // val sortedProp: Prop = ???
-      val smallInt = Gen.choose(-10,10)
-      val sortedProp = Prop.forAll(Gen.listOf(smallInt)) { ns =>
-        val nss = sortingFunction(ns)
-        // We specify that every sorted list is either empty, has one element,
-        // or has no two consecutive elements `(a,b)` such that `a` is greater than `b`.
-        nss.isEmpty || !nss.zip(nss.tail).exists {
-          case (a,b) => a > b
-        } &&
-        // both lists should contain exactly the same elements with the same arities
-        equalMaps(
-          ns.groupBy(x => x).mapValues(_.length),
-          nss.groupBy(x => x).mapValues(_.length)
-        )
       }
 
       sortedProp.run(100, 1000, rng)

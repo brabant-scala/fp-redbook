@@ -1,7 +1,7 @@
 package nl.hugo.redbook.ch8
 
 import nl.hugo.redbook.ch6.RNG
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 class Test8_11 extends WordSpec with Matchers {
   val unitSGen = SGen { n => Gen.unit(n) }

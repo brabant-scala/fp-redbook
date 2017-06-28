@@ -1,7 +1,7 @@
 package nl.hugo.redbook.ch8
 
 import nl.hugo.redbook.ch6.RNG
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 class Test8_08 extends WordSpec with Matchers {
   (0.0 to 1.0 by 0.1).foreach { pl =>
