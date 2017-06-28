@@ -13,7 +13,7 @@ class MyParserSpec extends WordSpec with Matchers {
 
     "reject a prefix" in {
       val loc = Location("zfoobar")
-      p(loc) should be(Failure(ParseError(List((loc, "Expected: foo"))), isCommitted = false))
+      p(loc) should be(a[Failure])
     }
 
     "match a string at an offset position" in {
@@ -22,7 +22,7 @@ class MyParserSpec extends WordSpec with Matchers {
 
     "reject a string at a prefix position" in {
       val loc = Location("0123456789", 3)
-      p(loc) should be(Failure(ParseError(List((loc, "Expected: foo"))), isCommitted = false))
+      p(loc) should be(a[Failure])
     }
   }
 
@@ -42,6 +42,37 @@ class MyParserSpec extends WordSpec with Matchers {
       val q = (_: String) => string("b")
 
       int.flatMap(string("b").listOfN(_))(loc) should be(Success(List("b", "b", "b"), 4))
+    }
+  }
+
+  "MyParser.quoted" should {
+    "process letters" in {
+      val loc = Location(""""abcdefghijklmnopqrstuvwxyz"""")
+
+      quoted(loc) should be( Success("abcdefghijklmnopqrstuvwxyz", 28))
+    }
+
+    "process number" in {
+      val loc = Location(""""0123456789"""")
+
+      quoted(loc) should be( Success("0123456789", 12))
+      quoted(Location(""""6" """)) should be( Success("6", 3))
+    }
+  }
+
+  "MyParser.double" should {
+    "fail on a quoted number" in {
+      val loc = Location(""""62"""")
+
+      double(loc) should be (a[Failure])
+    }
+  }
+
+  "MyParser.doubleString" should {
+    "fail on a quoted number" in {
+      val loc = Location(""""62"""")
+
+      doubleString(loc) should be (a[Failure])
     }
   }
 }

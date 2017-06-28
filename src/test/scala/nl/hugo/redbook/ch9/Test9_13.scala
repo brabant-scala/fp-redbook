@@ -3,39 +3,41 @@ package nl.hugo.redbook.ch9
 import nl.hugo.redbook.Spec
 
 class Test9_13 extends Spec {
-  import LocationParser._
 
-  def parser = JSON.jsonParser(Impl)
+  import MyParser._
+  import MyParserTypes._
 
-  val token = "Hello, world!"
+  def parser: Parser[JSON] = JSON.jsonParser(MyParser)
+
+  val token: String = "Hello, world!"
 
   "string" should {
 
     "parse a string token" in {
       val location = Location(token)
-      Impl.string(token)(location) should be(Success(token, token.length))
+      string(token)(location) should be(Success(token, token.length))
     }
 
     "not parse a partial string token" in {
       val location = Location(token.take(5))
-      val error = ParseError(Nil).push(location.advanceBy(5), s"Expected: $token")
-      Impl.string(token)(location) should be(Failure(error, isCommitted = false))
+      val error = ParseError(Nil).push(location /*.advanceBy(5)*/ , s"Expected: $token")
+      string(token)(location) should be(Failure(error, isCommitted = false))
     }
   }
 
   "regex" should {
 
-    val regex = ".*ll.*!".r
+    val regexpr = ".*ll.*!".r
 
     "parse a regular expression" in {
       val location = Location(token)
-      Impl.regex(regex)(location) should be(Success(token, token.length))
+      MyParser.regex(regexpr)(location) should be(Success(token, token.length))
     }
 
     "not parse a partial regular expression token" in {
       val location = Location(token.take(5))
-      val error = ParseError(Nil).push(location, s"Expected match: ${regex.pattern}")
-      Impl.regex(regex)(location) should be(Failure(error, isCommitted = false))
+      val error = ParseError(Nil).push(location, s"Expected match: ${regexpr.pattern}")
+      MyParser.regex(regexpr)(location) should be(Failure(error, isCommitted = false))
     }
   }
 
@@ -43,7 +45,7 @@ class Test9_13 extends Spec {
 
     "parse always" in {
       val location = Location(token)
-      Impl.succeed(42)(location) should be(Success(42, 0))
+      succeed(42)(location) should be(Success(42, 0))
     }
   }
 
@@ -51,8 +53,8 @@ class Test9_13 extends Spec {
 
     "return the parsed string" in {
       val location = Location(token)
-      Impl.slice(Impl.string(token))(location) should be(Success(token, token.length))
-      Impl.slice(Impl.succeed(42))(location) should be(Success("", 0))
+      slice(string(token))(location) should be(Success(token, token.length))
+      slice(succeed(42))(location) should be(Success("", 0))
     }
   }
 }
