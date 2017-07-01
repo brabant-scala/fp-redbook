@@ -3,9 +3,9 @@ package nl.hugo.redbook.ch9
 import java.util.regex.Pattern
 
 import nl.hugo.redbook.ch9.MyParserTypes._
-import org.scalacheck.{Gen, Prop}
+import org.scalacheck.{ Gen, Prop }
 
-import scala.language.{higherKinds, implicitConversions}
+import scala.language.{ higherKinds, implicitConversions }
 import scala.util.matching.Regex
 
 // A parser is a function that analyses a piece of text and tries to extract some information from this. This can be
@@ -21,7 +21,7 @@ import scala.util.matching.Regex
 //   type Parser[A] = Location => Either[Failure, Success[A]]
 // Where these type encapsulate that information.
 
-trait Parsers[Parser[+ _]] {
+trait Parsers[Parser[+_]] {
   self =>
 
   def run[A](p: Parser[A])(input: String): Either[ParseError, A]
@@ -318,7 +318,7 @@ object JSON {
 
   case class JObject(get: Map[String, JSON]) extends JSON
 
-  def valueParser[Err, Parser[+ _]](P: Parsers[Parser]): Parser[JSON] = {
+  def valueParser[Err, Parser[+_]](P: Parsers[Parser]): Parser[JSON] = {
     import P._
 
     def obj = objectParser(P)
@@ -338,7 +338,7 @@ object JSON {
     }).scope("value")
   }
 
-  def objectParser[Err, Parser[+ _]](P: Parsers[Parser]): Parser[JObject] = {
+  def objectParser[Err, Parser[+_]](P: Parsers[Parser]): Parser[JObject] = {
     import P._
     def keyvalue = keyvalueParser(P)
 
@@ -350,7 +350,7 @@ object JSON {
       .scope("object")
   }
 
-  def arrayParser[Err, Parser[+ _]](P: Parsers[Parser]): Parser[JSON] = {
+  def arrayParser[Err, Parser[+_]](P: Parsers[Parser]): Parser[JSON] = {
     import P._
     def value = valueParser(P)
 
@@ -360,14 +360,14 @@ object JSON {
       .surround(token("["), token("]")).scope("array")
   }
 
-  def keyvalueParser[Err, Parser[+ _]](P: Parsers[Parser]): Parser[(String, JSON)] = {
+  def keyvalueParser[Err, Parser[+_]](P: Parsers[Parser]): Parser[(String, JSON)] = {
     import P._
     def value = valueParser(P)
 
     (token(quoted) ** (token(":") <| value)).scope("keyvalue")
   }
 
-  def jsonParser[Err, Parser[+ _]](P: Parsers[Parser]): Parser[JSON] = {
+  def jsonParser[Err, Parser[+_]](P: Parsers[Parser]): Parser[JSON] = {
     import P._
     def obj = objectParser(P)
 
@@ -425,8 +425,7 @@ object MyParser extends Parsers[Parser] {
     (input: Location) =>
       if (input.startsWith(s)) {
         Success(s, s.length)
-      }
-      else
+      } else
         Failure(input.toError(s"Expected: $s"), isCommitted = false)
 
   // Exercise 9.13
@@ -445,7 +444,7 @@ object MyParser extends Parsers[Parser] {
     (input: Location) =>
       p(input) match {
         case Success(_, n) => Success(input.slice(n), n)
-        case f@Failure(_, _) => f
+        case f @ Failure(_, _) => f
       }
 
   override def attempt[A](p: Parser[A]): Parser[A] =
@@ -456,7 +455,7 @@ object MyParser extends Parsers[Parser] {
       case Success(v, n) => g(v)(s.advanceBy(n))
         .addCommit(n != 0)
         .advanceSuccess(n)
-      case f@Failure(_, _) => f
+      case f @ Failure(_, _) => f
     }
 
   override def label[A](msg: String)(p: Parser[A]): Parser[A] =

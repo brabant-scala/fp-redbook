@@ -49,14 +49,14 @@ class MyParserSpec extends WordSpec with Matchers {
     "process letters" in {
       val loc = Location(""""abcdefghijklmnopqrstuvwxyz"""")
 
-      quoted(loc) should be( Success("abcdefghijklmnopqrstuvwxyz", 28))
+      quoted(loc) should be(Success("abcdefghijklmnopqrstuvwxyz", 28))
     }
 
     "process number" in {
       val loc = Location(""""0123456789"""")
 
-      quoted(loc) should be( Success("0123456789", 12))
-      quoted(Location(""""6" """)) should be( Success("6", 3))
+      quoted(loc) should be(Success("0123456789", 12))
+      quoted(Location(""""6" """)) should be(Success("6", 3))
     }
   }
 
@@ -64,7 +64,7 @@ class MyParserSpec extends WordSpec with Matchers {
     "fail on a quoted number" in {
       val loc = Location(""""62"""")
 
-      double(loc) should be (a[Failure])
+      double(loc) should be(a[Failure])
     }
   }
 
@@ -72,7 +72,7 @@ class MyParserSpec extends WordSpec with Matchers {
     "fail on a quoted number" in {
       val loc = Location(""""62"""")
 
-      doubleString(loc) should be (a[Failure])
+      doubleString(loc) should be(a[Failure])
     }
   }
 }
