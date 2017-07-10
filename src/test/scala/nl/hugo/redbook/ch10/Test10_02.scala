@@ -1,8 +1,7 @@
 package nl.hugo.redbook.ch10
 
-import org.scalatest.{ Matchers, WordSpec }
-
 import nl.hugo.redbook.ch10.Monoid._
+import org.scalatest.{ Matchers, WordSpec }
 
 class Test10_02 extends WordSpec with Matchers {
   "An optionMonoid" should {
@@ -12,7 +11,7 @@ class Test10_02 extends WordSpec with Matchers {
 
     "process two Some" in {
       // Exercise 10.02: You are free to choose the implementation
-      optionMonoid.op(Some(1), Some(2)) shouldBe ???
+      optionMonoid.op(Some(1), Some(2)) shouldBe Some(1)
     }
 
     "return right argument when left argument is 'zero'" in {
