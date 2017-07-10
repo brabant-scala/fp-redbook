@@ -100,9 +100,6 @@ object Nonblocking {
       }
     }
 
-    def sequence[A](as: IndexedSeq[Par[A]]): Par[IndexedSeq[A]] =
-      sequenceBalanced(as)
-
     def sequence[A](as: List[Par[A]]): Par[List[A]] =
       map(sequenceBalanced(as.toIndexedSeq))(_.toList)
 
@@ -132,59 +129,49 @@ object Nonblocking {
       }
 
     // Exercise 7.11
-    def choiceN[A](p: Par[Int])(ps: List[Par[A]]): Par[A] =
-      es => new Future[A] {
-        def apply(cb: A => Unit): Unit = p(es) { v => eval(es) { ps(v)(es)(cb) } }
-      }
+    def choiceN[A](p: Par[Int])(ps: List[Par[A]]): Par[A] = ???
 
     // Exercise 7.11
     def choiceViaChoiceN[A](a: Par[Boolean])(ifTrue: Par[A], ifFalse: Par[A]): Par[A] =
-      choiceN(map(a)(if (_) 0 else 1))(List(ifTrue, ifFalse))
+      ???
 
     // Exercise 7.12
     def choiceMap[K, V](p: Par[K])(ps: Map[K, Par[V]]): Par[V] =
-      es => new Future[V] {
-        def apply(cb: V => Unit): Unit = p(es) { k => eval(es) { ps(k)(es)(cb) } }
-      }
+      ???
 
     // Exercise 7.13
     // see `Nonblocking.scala` answers file. This function is usually called something else!
     def chooser[A, B](p: Par[A])(f: A => Par[B]): Par[B] =
-      es => new Future[B] {
-        def apply(cb: B => Unit): Unit = p(es) { v => eval(es) { f(v)(es)(cb) } }
-      }
+      ???
 
     // Exercise 7.13
     // Note[AD]: I've swapped the arguments back to (t: Par[A], f: Par[A]) they were
     // (f: Par[A], t: Par[A]) in the original..
     def choiceViaChooser[A](p: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
-      chooser(p)(if (_) t else f)
+      ???
 
     // Exercise 7.13
     // Renamed from chooseNChooser
     def choiceNViaChooser[A](p: Par[Int])(choices: List[Par[A]]): Par[A] =
-      chooser(p)(choices(_))
+      ???
 
     def flatMap[A, B](p: Par[A])(f: A => Par[B]): Par[B] = chooser(p)(f)
 
     // Exercise 7.14
     def join[A](p: Par[Par[A]]): Par[A] =
-      es => new Future[A] {
-        def apply(cb: A => Unit): Unit = p(es) { v => eval(es) { v(es)(cb) } }
-      }
+      ???
 
     // Exercise 7.14
     def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] =
-      flatMap(a)(id => id)
+      ???
 
     // Exercise 7.14
     def flatMapViaJoin[A, B](p: Par[A])(f: A => Par[B]): Par[B] =
-      join(map(p)(f))
+      ???
 
     // infix versions of `map`, `map2` and zip
     implicit class ParOps[A](val p: Par[A]) extends AnyVal {
       def map[B](f: A => B): Par[B] = Par.map(p)(f)
-      def flatMap[B](f: A => Par[B]): Par[B] = Par.flatMap(p)(f)
       def map2[B, C](b: Par[B])(f: (A, B) => C): Par[C] = Par.map2(p, b)(f)
       def zip[B](b: Par[B]): Par[(A, B)] = p.map2(b)((_, _))
     }
