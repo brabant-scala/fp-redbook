@@ -25,6 +25,6 @@ object JSON {
     val spaces = char(' ').many.slice
     val obj = regex("""{\s*"[^"]+"\s*:[^,}]+}""".r).slice
     val array = regex("""\s*[\s*"[^"]+\s*""".r).slice
-    
+
   }
 }

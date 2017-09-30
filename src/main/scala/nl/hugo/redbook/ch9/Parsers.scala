@@ -36,6 +36,7 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
 
   // Exercise 9.4
   def listOfN[A](n: Int, p: Parser[A]): Parser[List[A]] = map2(p, listOfN(n-1, p)){ case (a, listA) => a +: listA }
+  // n == 0 eindigt de recursie!!!
 
   // Exercise 9.5
   def nonStrict[A](p: => Parser[A]): Parser[A] = p
