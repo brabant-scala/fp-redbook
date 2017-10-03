@@ -1,5 +1,6 @@
 package nl.hugo.redbook.ch10
 
+import nl.hugo.redbook.ch3.{ Branch, Leaf, Tree }
 import nl.hugo.redbook.ch10.Helpers.{ appendL, appendR }
 import nl.hugo.redbook.ch10.Monoid.stringMonoid
 import org.scalatest.{ Matchers, WordSpec }

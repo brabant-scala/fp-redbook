@@ -33,7 +33,7 @@ class Test10_09 extends WordSpec with Matchers {
     // throw an exception. However, given that the return type is a Boolean, and not an Option[Boolean], one cold argue
     // that this function should always return a Boolean and never throw. Then, is an empty sequence 'out of order'?
     "return true on an empty sequence" in {
-      ordered(IndexedSeq.empty) shouldBe true
+      ordered(IndexedSeq.empty[Int]) shouldBe true
     }
   }
 }

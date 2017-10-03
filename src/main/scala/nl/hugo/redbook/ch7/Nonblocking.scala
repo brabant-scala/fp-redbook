@@ -84,6 +84,17 @@ object Nonblocking {
           p(es)(a => eval(es) { cb(f(a)) })
       }
 
+    // exercise 7.5 - binary, parallel
+    def sequence[A](ps: IndexedSeq[Par[A]]): Par[IndexedSeq[A]] =
+      ps match {
+        case IndexedSeq() => unit(Vector.empty[A])
+        case IndexedSeq(a) => map(a)(Vector(_))
+        case _ => fork {
+          val (l, r) = ps.splitAt(ps.size / 2)
+          map2(sequence(l), sequence(r))(_ ++ _)
+        }
+      }
+
     // Exercises
 
     def choice[A](p: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =

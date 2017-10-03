@@ -33,8 +33,10 @@ class Test10_12 extends WordSpec with Matchers with FoldableBehaviours {
 
   // These two sets are to test the methods in Foldable[]
   object FoldableWithFoldLeft extends Foldable[List] {
-    override def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B =
+    def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B =
       ListFoldable.foldLeft(as)(z)(f)
+    def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B =
+      foldMap(as)(f.curried)(Monoid.endoMonoid[B])(z)
   }
 
   "FoldableWithFoldLeft" should {
@@ -47,8 +49,10 @@ class Test10_12 extends WordSpec with Matchers with FoldableBehaviours {
   }
 
   object FoldableWithFoldRight extends Foldable[List] {
-    override def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B =
+    def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B =
       ListFoldable.foldRight(as)(z)(f)
+    def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B =
+      foldMap(as)(a => (b: B) => f(b, a))(Monoid.swap(Monoid.endoMonoid[B]))(z)
   }
 
   "FoldableWithFoldRight" should {
@@ -60,4 +64,3 @@ class Test10_12 extends WordSpec with Matchers with FoldableBehaviours {
     behave like aSeqConcatable(foldable)
   }
 }
-
