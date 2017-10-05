@@ -41,21 +41,24 @@ object Par {
 
   // Exercise 7.04
   def asyncF[A, B](f: A => B): A => Par[B] = {
-    (a: A) => {
-      (es: ExecutorService) => {
-        es.submit(new Callable[B]{
-          override def call(): B = f(a)
-        })
+    (a: A) =>
+      {
+        (es: ExecutorService) =>
+          {
+            es.submit(new Callable[B] {
+              override def call(): B = f(a)
+            })
+          }
       }
-    }
   }
 
   // Exercise 7.05
   def sequence[A](ps: List[Par[A]]): Par[List[A]] = {
     ps.foldRight(unit(List.empty[A])) {
-      (parA, parListA) => {
-        map2(parA, parListA)(_ :: _)
-      }
+      (parA, parListA) =>
+        {
+          map2(parA, parListA)(_ :: _)
+        }
     }
   }
 
@@ -66,7 +69,7 @@ object Par {
 
   // Exercise 7.06
   def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = {
-    val x: Par[List[List[A]]] = parMap(as){a => if (f(a)) List(a) else List.empty}
+    val x: Par[List[List[A]]] = parMap(as) { a => if (f(a)) List(a) else List.empty }
     map(x)(_.flatten)
   }
 
@@ -92,7 +95,7 @@ object Par {
 
   // Exercise 7.11
   def choiceViaChoiceN[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = {
-    choiceN(map(cond)(if (_) 0 else 1))(List(t,f))
+    choiceN(map(cond)(if (_) 0 else 1))(List(t, f))
   }
 
   // Exercise 7.12

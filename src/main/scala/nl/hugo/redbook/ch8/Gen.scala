@@ -6,11 +6,11 @@ import nl.hugo.redbook.ch7._
 import nl.hugo.redbook.ch7.Par.Par
 import Gen._
 import Prop._
-import java.util.concurrent.{ExecutorService, Executors}
+import java.util.concurrent.{ ExecutorService, Executors }
 
 import nl.hugo.redbook.ch6.State.Rand
 
-case class Prop(run: (MaxSize, TestCases, RNG) => Result) {self =>
+case class Prop(run: (MaxSize, TestCases, RNG) => Result) { self =>
   // Exercise 8.9
   def &&(p: Prop): Prop = Prop(
     (maxSize, testCases, rng) => {
@@ -18,9 +18,9 @@ case class Prop(run: (MaxSize, TestCases, RNG) => Result) {self =>
         case Falsified(msg, cnt) => Falsified(msg, cnt) //Falsified(s"Left($msg)", cnt)
         case x =>
           (x, p.run(maxSize, testCases, rng)) match {
-            case (_,Falsified(msg, cnt)) => Falsified(msg, cnt) //Falsified(s"Right($msg)", cnt)
+            case (_, Falsified(msg, cnt)) => Falsified(msg, cnt) //Falsified(s"Right($msg)", cnt)
             case (Proved, Proved) => Proved
-            case (_,_) => Passed
+            case (_, _) => Passed
           }
       }
     }
@@ -30,9 +30,9 @@ case class Prop(run: (MaxSize, TestCases, RNG) => Result) {self =>
   def ||(p: Prop): Prop = Prop(
     (maxSize, testCases, rng) => {
       self.run(maxSize, testCases, rng) match {
-        case Falsified(_,_) =>
+        case Falsified(_, _) =>
           p.run(maxSize, testCases, rng) match {
-            case Falsified(msg, cnt) => Falsified(msg, cnt)//Falsified(s"Left($msg1), Right($msg2)", cnt1 min cnt2)
+            case Falsified(msg, cnt) => Falsified(msg, cnt) //Falsified(s"Left($msg1), Right($msg2)", cnt1 min cnt2)
             case x => x
           }
         case x => x
@@ -122,7 +122,7 @@ object Prop {
 object Gen {
   // Exercise 8.4
   def choose(start: Int, stopExclusive: Int): Gen[Int] = {
-    Gen(State(RNG.nonNegativeInt).map(x => start + x %(stopExclusive - start)))
+    Gen(State(RNG.nonNegativeInt).map(x => start + x % (stopExclusive - start)))
   }
 
   // Exercise 8.5
@@ -136,7 +136,7 @@ object Gen {
     if (n <= 0) {
       unit(Nil)
     } else {
-      Gen(g.sample.map2(listOfN(n-1, g).sample)(_ :: _))
+      Gen(g.sample.map2(listOfN(n - 1, g).sample)(_ :: _))
     }
   }
 
@@ -151,7 +151,7 @@ object Gen {
   // Exercise 8.8
   def weighted[A](g1: (Gen[A], Double), g2: (Gen[A], Double)): Gen[A] = {
     for {
-      probability <- Gen(State(RNG.double)).map((d: Double) => d*(g1._2 + g2._2))
+      probability <- Gen(State(RNG.double)).map((d: Double) => d * (g1._2 + g2._2))
       value <- if (probability < g1._2) g1._1 else g2._1
     } yield value
   }
@@ -201,7 +201,7 @@ case class Gen[+A](sample: State[RNG, A]) {
     for {
       x <- this
       y <- g
-    } yield f(x,y)
+    } yield f(x, y)
   }
 
   def **[B](g: Gen[B]): Gen[(A, B)] = (this map2 g)((_, _))
@@ -222,9 +222,9 @@ case class SGen[+A](forSize: Int => Gen[A]) {
     for {
       x <- this
       y <- g
-    } yield f(x,y)
+    } yield f(x, y)
   }
 
   // Exercise 8.11
-  def **[B](s2: SGen[B]): SGen[(A, B)] = (this map2 s2)((_,_))
+  def **[B](s2: SGen[B]): SGen[(A, B)] = (this map2 s2)((_, _))
 }

@@ -26,6 +26,8 @@ class Test10_04 extends WordSpec with Matchers {
     }
 
     "hold for the optionMonoid" in {
+      implicit val intMonoid: Monoid[Int] = Monoid.intAddition
+
       val optionGen: Gen[Option[Int]] = Gen.union(smallIntGen.map(Some(_)), Gen.unit(None))
 
       PropRunner.run(monoidLaws(optionMonoid[Int], optionGen)) shouldBe true

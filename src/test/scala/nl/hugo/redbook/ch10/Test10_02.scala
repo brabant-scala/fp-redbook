@@ -5,14 +5,17 @@ import org.scalatest.{ Matchers, WordSpec }
 import nl.hugo.redbook.ch10.Monoid._
 
 class Test10_02 extends WordSpec with Matchers {
+  implicit val intMonoid: Monoid[Int] = Monoid.intAddition
+
   "An optionMonoid" should {
     "return 'zero' when both arguments are 'zero'" in {
       optionMonoid.op(optionMonoid.zero, optionMonoid.zero) shouldBe optionMonoid.zero
     }
 
     "process two Some" in {
+      val M = implicitly[Monoid[Int]]
       // Exercise 10.02: You are free to choose the implementation
-      optionMonoid.op(Some(1), Some(2)) shouldBe ???
+      optionMonoid.op(Some(1), Some(2)) shouldBe Some(M.op(1, 2))
     }
 
     "return right argument when left argument is 'zero'" in {

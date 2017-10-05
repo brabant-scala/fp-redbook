@@ -115,7 +115,7 @@ trait Stream[+A] {
         }
     }
 
-  def zip[B](s: Stream[B]): Stream[(A,B)] = zipWith(s)((_,_))
+  def zip[B](s: Stream[B]): Stream[(A, B)] = zipWith(s)((_, _))
 
   // Exercise 5.13
   def zipWith[B, C](s: Stream[B])(f: (A, B) => C): Stream[C] =
