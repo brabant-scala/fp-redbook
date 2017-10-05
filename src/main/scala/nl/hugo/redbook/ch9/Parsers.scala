@@ -26,7 +26,7 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
 
   // Exercise 9.1
   def map2UsingProduct[A, B, C](pa: Parser[A], pb: => Parser[B])(f: (A, B) => C): Parser[C] =
-    product(pa, pb).map(ab => f(ab))
+    product(pa, pb).map{ case (a,b) => f(a,b) }
 
   // Exercise 9.2
   def many1[A](p: Parser[A]): Parser[List[A]] = product(p, many(p)).map { case (a, listA) => a +: listA }

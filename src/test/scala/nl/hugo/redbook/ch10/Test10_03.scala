@@ -12,8 +12,7 @@ class Test10_03 extends WordSpec with Matchers {
 
     "process two functions" in {
       // Exercise 10.02: You are free to choose the implementation
-      //monoid.op(_ + 200, _ + 300)(1) shouldBe ???
-
+      monoid.op(_ + 200, _ + 300)(1) shouldBe 501
     }
 
     "return right argument when left argument is 'zero'" in {
