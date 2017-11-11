@@ -55,17 +55,18 @@ object Monoid {
 
   // Exercise 10.02
   def optionMonoid[A]: Monoid[Option[A]] = new Monoid[Option[A]] {
-    override def op(a1: Option[A], a2: Option[A]): Option[A] = (a1,a2) match {
-      case (None, _) => a2
-      case _         => a1
-    }
+//    override def op(a1: Option[A], a2: Option[A]): Option[A] = (a1,a2) match {
+//      case (None, _) => a2
+//      case _         => a1
+//    }
+    override def op(a1: Option[A], a2: Option[A]): Option[A] = a1 orElse a2
 
     override def zero: Option[A] = None
   }
 
   // Exercise 10.03
   def endoMonoid[A]: Monoid[A => A] = new Monoid[A => A] {
-    override def op(a1: A => A, a2: A => A): A => A = a => a2(a1(a))
+    override def op(a1: A => A, a2: A => A): A => A = a => a2(a1(a))    // a compose b
 
     override def zero: A => A = x => x
   }
@@ -108,7 +109,7 @@ object Monoid {
 
   // Exercise 10.07
   def foldMapV[A, B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): B = {
-    if (as.length > 2) {
+    if (as.length >= 2) {
       val (left, right) = as.splitAt(as.length / 2)
       m.op(foldMapV(left, m)(f), foldMapV(right, m)(f))
     } else {
@@ -125,11 +126,11 @@ object Monoid {
 
   // Exercise 10.08
   def parFoldMap[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = {
-    if (v.length > 2) {
+    if (v.length >= 2) {
       val (left, right) = v.splitAt(v.length / 2)
       Par.map2(parFoldMap(left, m)(f), parFoldMap(right, m)(f))(m.op)
     } else {
-      Par.unit(v.map(f).foldRight(m.zero)(m.op))
+      Par.unit(v.map(f).foldRight(m.zero)(m.op))  // Zou hier lazyUnit moeten gebruiken anders wordt niet in aparte thread gedaan.
     }
   }
 
@@ -137,7 +138,7 @@ object Monoid {
   def foldMap[A, B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): B = as.map(f).foldRight(m.zero)(m.op)
 
   def ordered(ints: IndexedSeq[Int]): Boolean =
-    foldMap(ints.sliding(2).collect { case IndexedSeq(x,y) => y - x }.toIndexedSeq, new Monoid[Boolean] {
+    foldMap(ints.sliding(2).collect { case IndexedSeq(x,y) => y - x }.toIndexedSeq, new Monoid[Boolean] {  // kan hier ook andMonoid gebruiken
       override def op(a1: Boolean, a2: Boolean): Boolean = a1 && a2
 
       override def zero: Boolean = true
