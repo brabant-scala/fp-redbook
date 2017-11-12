@@ -44,7 +44,7 @@ trait Monad[M[_]] extends Functor[M] {
   def replicateM[A](n: Int, ma: M[A]): M[List[A]] = ???
 
   // Exercise 11.6
-  def filterM[A](ms: M[A])(f: A => M[Boolean]): M[List[A]] = ???
+  def filterM[A](ms: List[A])(f: A => M[Boolean]): M[List[A]] = ???
 
   // Exercise 11.7
   def compose[A,B,C](f: A => M[B], g: B => M[C]): A => M[C] = ???
@@ -92,7 +92,10 @@ object Monad {
   val idMonad: Monad[Id] = ???
 
   // Exercise 11.20
-  def readerMonad[R] = ???
+  def readerMonad[R] = new Monad[({type f[x] = Reader[R,x]})#f] {
+    def unit[A](a: => A): Reader[R,A] = ???
+    override def flatMap[A,B](st: Reader[R,A])(f: A => Reader[R,B]): Reader[R,B] = ???
+  }
 }
 
 case class Id[A](value: A) {
@@ -101,13 +104,3 @@ case class Id[A](value: A) {
   // Exercise 11.17
   def flatMap[B](f: A => Id[B]): Id[B] = ???
 }
-
-object Reader {
-  def readerMonad[R] = new Monad[({type f[x] = Reader[R,x]})#f] {
-    // Exercise 11.20
-    def unit[A](a: => A): Reader[R,A] = ???
-    // Exercise 11.20
-    override def flatMap[A,B](st: Reader[R,A])(f: A => Reader[R,B]): Reader[R,B] = ???
-  }
-}
-
