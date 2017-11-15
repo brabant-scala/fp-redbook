@@ -151,6 +151,8 @@ object Monad {
   }
 
   // Exercise 11.2
+  def stateMonad[S] = new StateMonad[S].monad
+
   class StateMonad[S] {
     type SState[A] = State[S, A]
 
