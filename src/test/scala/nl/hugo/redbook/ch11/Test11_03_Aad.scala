@@ -3,7 +3,7 @@ package nl.hugo.redbook.ch11
 import nl.hugo.redbook.ch11.Monad._
 import org.scalatest.{Matchers, WordSpec}
 
-class Test11_03 extends WordSpec with Matchers {
+class Test11_03_Aad extends WordSpec with Matchers {
   val m = optionMonad
 
   "Monad.sequence" should {

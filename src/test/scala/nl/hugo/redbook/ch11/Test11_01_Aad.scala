@@ -4,7 +4,7 @@ import org.scalatest.{ Matchers, WordSpec }
 
 import nl.hugo.redbook.ch11.Monad._
 
-class Test11_01 extends WordSpec with Matchers {
+class Test11_01_Aad extends WordSpec with Matchers {
   "An Option monad" should {
     val m = optionMonad
     "return the value passed in 'unit' as the value in the option" in {

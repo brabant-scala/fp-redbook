@@ -4,7 +4,7 @@ import org.scalatest.{Matchers, WordSpec}
 import nl.hugo.redbook.ch11.Monad._
 import nl.hugo.redbook.ch6.{CNG, RNG, State}
 
-class Test11_02 extends WordSpec with Matchers {
+class Test11_02_Aad extends WordSpec with Matchers {
   implicit val last = CNG.zero
   val m = stateMonad[RNG]
 
