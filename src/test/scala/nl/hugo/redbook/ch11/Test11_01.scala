@@ -5,7 +5,6 @@ import org.scalatest.concurrent.TimeLimitedTests
 import org.scalatest.time.Span
 import org.scalatest.time.SpanSugar._
 import org.scalatest.{ Matchers, WordSpec }
-import nl.hugo.redbook.ch7.Par
 import nl.hugo.redbook.ch7.Nonblocking.Par
 import nl.hugo.redbook.ch9.LocationParser
 
@@ -20,12 +19,11 @@ class Test11_01 extends WordSpec with Matchers with TimeLimitedTests {
 
   def f(i: Int): String = s"i = $i"
 
-  /* TODO: fix
   "Monad.parMonad" should {
     "assign a unit value" in {
       val u = Monad.parMonad.unit(v)
 
-      Par.run(es)(u).get should be(v)
+      Par.run(es)(u) should be(v)
     }
 
     "flatMap a function" in {
@@ -34,10 +32,9 @@ class Test11_01 extends WordSpec with Matchers with TimeLimitedTests {
 
       val pfv = Monad.parMonad.flatMap(pv)(pf)
 
-      Par.run(es)(pfv).get should be("i = 1")
+      Par.run(es)(pfv) should be("i = 1")
     }
   }
-  */
 
   "Monad.parserMonad" should {
     val parser = LocationParser.Impl

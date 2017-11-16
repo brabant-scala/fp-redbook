@@ -3,10 +3,9 @@ package nl.hugo.redbook.ch11
 import org.scalatest.{ Matchers, WordSpec }
 
 class Test11_02 extends WordSpec with Matchers {
-  /* TODO: fix
   "Monad.stateMonad" should {
     "assign a unit value" in {
-      Monad.stateMonad[Int].unit("foo").run(1138) should be((1138, "foo"))
+      Monad.stateMonad[Int].unit("foo").run(1138) should be(("foo", 1138))
     }
 
     "flatMap a function" in {
@@ -17,5 +16,4 @@ class Test11_02 extends WordSpec with Matchers {
       Monad.stateMonad.flatMap(u)(d).run(1138) should be(("foofoo", 1138))
     }
   }
-  */
 }
