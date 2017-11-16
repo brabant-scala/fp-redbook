@@ -11,6 +11,7 @@ import nl.hugo.redbook.ch9.Parsers
 
 import scala.{ Either => _, Option => _, Some => _, Stream => _ }
 import scala.language.higherKinds
+import scala.language.reflectiveCalls
 
 trait Functor[F[_]] {
   def map[A, B](fa: F[A])(f: A => B): F[B]
@@ -147,8 +148,14 @@ object Monad {
 
   // Exercise 11.20
   def readerMonad[R] = new Monad[({ type f[x] = Reader[R, x] })#f] {
-    def unit[A](a: => A): Reader[R, A] = ???
-    override def flatMap[A, B](st: Reader[R, A])(f: A => Reader[R, B]): Reader[R, B] = ???
+    def unit[A](a: => A): Reader[R, A] = Reader(_ => a)
+    override def flatMap[A, B](st: Reader[R, A])(f: A => Reader[R, B]): Reader[R, B] =
+      Reader(r => {
+        val thisResult = st.run(r)
+        f(thisResult).run(r)
+      })
+
+    def getR: Reader[R, R] = Reader(r => r)
   }
 }
 
