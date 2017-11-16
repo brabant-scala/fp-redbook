@@ -154,9 +154,9 @@ object Monad {
         val thisResult = st.run(r)
         f(thisResult).run(r)
       })
-
-    def getR: Reader[R, R] = Reader(r => r)
   }
+
+  def getR[R]: Reader[R, R] = Reader(r => r)
 }
 
 case class Id[A](value: A) {
