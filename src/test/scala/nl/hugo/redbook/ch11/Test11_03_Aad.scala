@@ -1,6 +1,8 @@
 package nl.hugo.redbook.ch11
 
+import nl.hugo.redbook.ch4.{None, Some}
 import nl.hugo.redbook.ch11.Monad._
+
 import org.scalatest.{Matchers, WordSpec}
 
 class Test11_03_Aad extends WordSpec with Matchers {
@@ -8,11 +10,11 @@ class Test11_03_Aad extends WordSpec with Matchers {
 
   "Monad.sequence" should {
     "return Some(List(...)) when all input list elements are Some" in {
-      m.sequence(List(Option(1),Option(2),Option(3))) shouldBe Some(List(1,2,3))
+      m.sequence(List(Some(1),Some(2),Some(3))) shouldBe Some(List(1,2,3))
     }
 
     "return None when at least one input list element is None" in {
-      m.sequence(List(Option(1),None,Option(3))) shouldBe None
+      m.sequence(List(Some(1),None,Some(3))) shouldBe None
     }
   }
 

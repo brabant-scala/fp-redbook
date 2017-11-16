@@ -1,6 +1,7 @@
 package nl.hugo.redbook.ch11
 
 import nl.hugo.redbook.ch11.Monad._
+
 import org.scalatest.{Matchers, WordSpec}
 
 class Test11_08_Aad extends WordSpec with Matchers {

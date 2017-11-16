@@ -2,6 +2,8 @@ package nl.hugo.redbook.ch11
 
 import org.scalatest.{ Matchers, WordSpec }
 
+import nl.hugo.redbook.ch4.{None, Some}
+import nl.hugo.redbook.ch5.Stream
 import nl.hugo.redbook.ch11.Monad._
 
 class Test11_01_Aad extends WordSpec with Matchers {
@@ -12,11 +14,11 @@ class Test11_01_Aad extends WordSpec with Matchers {
     }
 
     "return the resulting value in a single option when flat mapping with a method that itself returns an option" in {
-      m.flatMap(m.unit(10))(v => Option(v * 10)) shouldBe Some(100)
+      m.flatMap(m.unit(10))(v => Some(v * 10)) shouldBe Some(100)
     }
 
     "return None when flat mapping with a unit that results in None" in {
-      m.flatMap(m.unit(null: String))(v => Option(v + " foo")) shouldBe None
+      m.flatMap(None)(_ => Some("foo")) shouldBe None
     }
   }
 

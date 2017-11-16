@@ -1,8 +1,10 @@
 package nl.hugo.redbook.ch11
 
+import nl.hugo.redbook.ch4.{Option, Some}
+import nl.hugo.redbook.ch5.Stream
 import nl.hugo.redbook.ch6.State
 import nl.hugo.redbook.ch7.Par
-import nl.hugo.redbook.ch7.Par._
+import nl.hugo.redbook.ch7.Par.Par
 import nl.hugo.redbook.ch8.Gen
 
 import language.higherKinds
@@ -101,7 +103,7 @@ object Monad {
 
   // Exercise 11.1
   val optionMonad: Monad[Option] = new Monad[Option] {
-    override def unit[A](a: => A) = Option(a)
+    override def unit[A](a: => A) = Some(a)
     override def flatMap[A, B](ma: Option[A])(f: A => Option[B]) = ma flatMap f
   }
 
@@ -120,7 +122,7 @@ object Monad {
   // Exercise 11.2
   def stateMonad[S] = new Monad[({type f[x] = State[S,x]})#f] {
     override def unit[A](a: => A): State[S, A] = State.unit(a)
-    override def flatMap[A, B](ma: State[S, A])(f: A => State[S,B]): State[S, B] = flatMap(ma)(f)
+    override def flatMap[A, B](ma: State[S, A])(f: A => State[S,B]): State[S, B] = ma flatMap f
   }
 
   // Exercise 11.17

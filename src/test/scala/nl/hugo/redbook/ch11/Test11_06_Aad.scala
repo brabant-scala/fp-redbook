@@ -1,6 +1,8 @@
 package nl.hugo.redbook.ch11
 
+import nl.hugo.redbook.ch4.{None, Some}
 import nl.hugo.redbook.ch11.Monad._
+
 import org.scalatest.{Matchers, WordSpec}
 
 class Test11_06_Aad extends WordSpec with Matchers {

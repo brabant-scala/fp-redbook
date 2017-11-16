@@ -1,8 +1,8 @@
 package nl.hugo.redbook.ch11
 
 import org.scalatest.{Matchers, WordSpec}
-import nl.hugo.redbook.ch11.Monad._
 import nl.hugo.redbook.ch6.{CNG, RNG, State}
+import nl.hugo.redbook.ch11.Monad._
 
 class Test11_02_Aad extends WordSpec with Matchers {
   implicit val last = CNG.zero
