@@ -4,7 +4,6 @@ import nl.hugo.redbook.ch6.State
 import nl.hugo.redbook.ch7.Par
 import nl.hugo.redbook.ch7.Par._
 import nl.hugo.redbook.ch8.Gen
-import nl.hugo.redbook.ch9.Parsers
 
 import language.higherKinds
 
