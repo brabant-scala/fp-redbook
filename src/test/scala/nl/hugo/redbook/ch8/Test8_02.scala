@@ -8,7 +8,7 @@ import org.scalatest.{ Matchers, WordSpec }
 object MaxSpecification extends Properties("Sum") {
   def max(l: List[Int]): Int = l.foldRight(Int.MinValue)(_ max _)
 
-  property("max") = forAll { l: List[Int] => max(l) == l.max }
+  property("max") = forAll { l: List[Int] => max(l) == (if (l.isEmpty) Int.MinValue else l.max) }
 
   property("communative") = forAll { l: List[Int] => max(l) == max(l.reverse) }
 
