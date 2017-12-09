@@ -1,8 +1,8 @@
 package nl.hugo.redbook.ch11
 
-import java.util.concurrent.{ExecutorService, Executors}
+import java.util.concurrent.{ ExecutorService, Executors }
 
-import nl.hugo.redbook.ch4.{None, Option, Some}
+import nl.hugo.redbook.ch4.{ None, Option, Some }
 import nl.hugo.redbook.ch5.Stream
 import nl.hugo.redbook.ch7.Par
 import nl.hugo.redbook.ch7.Par.Par
@@ -10,7 +10,7 @@ import nl.hugo.redbook.ch9.LocationParser
 import org.scalatest.concurrent.TimeLimitedTests
 import org.scalatest.time.Span
 import org.scalatest.time.SpanSugar._
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 import scala.language.postfixOps
 
@@ -45,7 +45,7 @@ class Test11_01 extends WordSpec with Matchers with TimeLimitedTests {
   }
 
   "Monad.parserMonad" should {
-    val parser = LocationParser.Impl
+    val parser = LocationParser
     val parserMonad = Monad.parserMonad(parser)
     "assign a unit value" in {
       val u = parserMonad.unit("1000")
@@ -88,9 +88,9 @@ class Test11_01 extends WordSpec with Matchers with TimeLimitedTests {
 
     "flatMap a function" in {
       val u = Monad.streamMonad.unit(1)
-      def d(i: Int):Stream[Int] = Stream(i,i)
+      def d(i: Int): Stream[Int] = Stream(i, i)
 
-      Monad.streamMonad.flatMap(u)(d).toList should be(List(1,1))
+      Monad.streamMonad.flatMap(u)(d).toList should be(List(1, 1))
     }
   }
 
@@ -101,9 +101,9 @@ class Test11_01 extends WordSpec with Matchers with TimeLimitedTests {
 
     "flatMap a function" in {
       val u = Monad.listMonad.unit(1)
-      def d(i: Int):List[Int] = List(i,i)
+      def d(i: Int): List[Int] = List(i, i)
 
-      Monad.listMonad.flatMap(u)(d) should be(List(1,1))
+      Monad.listMonad.flatMap(u)(d) should be(List(1, 1))
     }
   }
 }

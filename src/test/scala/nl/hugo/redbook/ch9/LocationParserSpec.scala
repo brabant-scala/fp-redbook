@@ -1,10 +1,10 @@
 package nl.hugo.redbook.ch9
 
-import nl.hugo.redbook.ch9.MyParser._
+import nl.hugo.redbook.ch9.LocationParser._
 import nl.hugo.redbook.ch9.MyParserTypes._
 import org.scalatest.{ Matchers, WordSpec }
 
-class MyParserSpec extends WordSpec with Matchers {
+class LocationParserSpec extends WordSpec with Matchers {
   "MyParser.string" should {
     val p = string("foo")
     "match a prefix string" in {

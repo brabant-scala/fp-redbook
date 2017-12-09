@@ -1,6 +1,6 @@
 package nl.hugo.redbook.ch11
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 import nl.hugo.redbook.ch4.Some
 

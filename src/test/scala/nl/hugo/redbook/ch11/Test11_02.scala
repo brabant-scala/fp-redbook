@@ -1,13 +1,13 @@
 package nl.hugo.redbook.ch11
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 import scala.language.postfixOps
 
 class Test11_02 extends WordSpec with Matchers {
   "Monad.stateMonad" should {
     "assign a unit value" in {
-      Monad.stateMonad[Int].unit("foo").run(1138) should be((1138, "foo"))
+      Monad.stateMonad[Int].unit("foo").run(1138) should be(("foo", 1138))
     }
 
     "flatMap a function" in {

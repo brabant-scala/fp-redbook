@@ -8,37 +8,37 @@ import org.scalatest.{ Matchers, WordSpec }
 class JSONSpec extends WordSpec with Matchers with Checkers {
   "valueParser" should {
 
-    val valueParser = JSON.valueParser(MyParser)
+    val valueParser = JSON.valueParser(LocationParser)
     "parse a null" in {
-      MyParser.run(valueParser)("null") should be(Right(JNull))
+      LocationParser.run(valueParser)("null") should be(Right(JNull))
     }
 
     "parse a number" in {
       check(Prop.forAll { (d: Double) =>
-        MyParser.run(valueParser)(d.toString) == Right(JNumber(d))
+        LocationParser.run(valueParser)(d.toString) == Right(JNumber(d))
       })
     }
 
     "parse a quoted string" in {
       check(Prop.forAll(Gen.alphaStr) {
         (s: String) =>
-          MyParser.run(valueParser)(s""""$s"""") == Right(JString(s))
+          LocationParser.run(valueParser)(s""""$s"""") == Right(JString(s))
       })
     }
 
     "parse quoted numbers as a string" in {
       check(Prop.forAll(Gen.numStr.suchThat(!_.isEmpty)) {
         (s: String) =>
-          MyParser.run(valueParser)(s""""$s"""") == Right(JString(s))
+          LocationParser.run(valueParser)(s""""$s"""") == Right(JString(s))
       })
     }
 
     "parse a true" in {
-      MyParser.run(valueParser)("true") should be(Right(JBool(true)))
+      LocationParser.run(valueParser)("true") should be(Right(JBool(true)))
     }
 
     "parse a false" in {
-      MyParser.run(valueParser)("false") should be(Right(JBool(false)))
+      LocationParser.run(valueParser)("false") should be(Right(JBool(false)))
     }
 
   }

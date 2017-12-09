@@ -3,7 +3,7 @@ package nl.hugo.redbook.ch9
 import MyParserTypes._
 import org.scalatest.{ Matchers, WordSpec }
 
-class MyParserTypesSpec extends WordSpec with Matchers {
+class LocationParserTypesSpec extends WordSpec with Matchers {
   "firstNonMatchingIndex" should {
     "return none for two empty strings" in {
       firstNonMatchingIndex("", "") should be(None)

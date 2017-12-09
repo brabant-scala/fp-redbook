@@ -1,21 +1,21 @@
 package nl.hugo.redbook.ch9
 
-import nl.hugo.redbook.Spec
+import org.scalatest.{ Matchers, WordSpec }
 
-class Test9_15 extends Spec {
+class Test9_15 extends WordSpec with Matchers {
   import MyParserTypes._
   import JSON._
 
-  def parser: Parser[JSON] = JSON.jsonParser(MyParser)
+  def parser: Parser[JSON] = JSON.jsonParser(LocationParser)
 
   def runPass(json: String, value: JSON): Unit =
-    MyParser.run(parser)(json) match {
+    LocationParser.run(parser)(json) match {
       case Right(v) => v should be(value)
       case Left(error) => fail(s"$json\n$error")
     }
 
   def runFail(json: String): Unit =
-    MyParser.run(parser)(json) shouldBe a[Left[ParseError, _]]
+    LocationParser.run(parser)(json) shouldBe a[Left[ParseError, _]]
 
   "JSON" should {
 

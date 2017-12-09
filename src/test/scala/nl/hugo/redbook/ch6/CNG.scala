@@ -20,5 +20,5 @@ class CNG(value: Int, rng: Option[RNG] = None) extends RNG {
     (value, rng.getOrElse(this))
 
   override def toString: String =
-    s"CNG($value,${rng.fold()(_.toString)})"
+    s"CNG($value,${rng.map(_.toString).getOrElse("None")})"
 }

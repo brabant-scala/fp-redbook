@@ -1,13 +1,13 @@
 package nl.hugo.redbook.ch9
 
-import nl.hugo.redbook.Spec
+import org.scalatest.{ Matchers, WordSpec }
 
-class Test9_13 extends Spec {
+class Test9_13 extends WordSpec with Matchers {
 
-  import MyParser._
+  import LocationParser._
   import MyParserTypes._
 
-  def parser: Parser[JSON] = JSON.jsonParser(MyParser)
+  def parser: Parser[JSON] = JSON.jsonParser(LocationParser)
 
   val token: String = "Hello, world!"
 
@@ -31,13 +31,13 @@ class Test9_13 extends Spec {
 
     "parse a regular expression" in {
       val location = Location(token)
-      MyParser.regex(regexpr)(location) should be(Success(token, token.length))
+      LocationParser.regex(regexpr)(location) should be(Success(token, token.length))
     }
 
     "not parse a partial regular expression token" in {
       val location = Location(token.take(5))
       val error = ParseError(Nil).push(location, s"Expected match: ${regexpr.pattern}")
-      MyParser.regex(regexpr)(location) should be(Failure(error, isCommitted = false))
+      LocationParser.regex(regexpr)(location) should be(Failure(error, isCommitted = false))
     }
   }
 

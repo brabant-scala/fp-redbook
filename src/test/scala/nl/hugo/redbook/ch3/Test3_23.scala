@@ -20,7 +20,7 @@ class Test3_23 extends WordSpec with Matchers {
     }
 
     "return an empty list if the first list is empty" in {
-      zipWith(Nil: List[Int], List(true, false))(_ == _) should be(Nil)
+      zipWith(Nil: List[Boolean], List(true, false))(_ == _) should be(Nil)
     }
 
     "return an empty list if the second list is empty" in {

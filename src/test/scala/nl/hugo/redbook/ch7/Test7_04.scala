@@ -4,14 +4,14 @@ import java.util.concurrent._
 
 import nl.hugo.redbook.ch7.ExecutorServiceDecorator._
 import nl.hugo.redbook.ch7.Par._
-import org.scalatest.concurrent.TimeLimitedTests
+import org.scalatest.concurrent.{ Eventually, TimeLimitedTests }
 import org.scalatest.time.Span
 import org.scalatest.time.SpanSugar._
 import org.scalatest.{ Matchers, WordSpec }
 
 import scala.language.postfixOps
 
-class Test7_04 extends WordSpec with Matchers with TimeLimitedTests {
+class Test7_04 extends WordSpec with Matchers with TimeLimitedTests with Eventually {
 
   // Each test automatically fails after one second.
   val timeLimit: Span = 1 second
@@ -30,7 +30,9 @@ class Test7_04 extends WordSpec with Matchers with TimeLimitedTests {
 
       Par.run(es)(par).get should be(f(10))
 
-      es.completedTaskCount should be > 0L
+      eventually {
+        es.completedTaskCount should be > 0L
+      }
     }
   }
 }

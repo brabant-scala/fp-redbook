@@ -1,10 +1,10 @@
 package nl.hugo.redbook.ch11
 
-import nl.hugo.redbook.ch4.{None, Option, Some}
-import org.scalatest.{Matchers, WordSpec}
+import nl.hugo.redbook.ch4.{ None, Option, Some }
+import org.scalatest.{ Matchers, WordSpec }
 
 import scala.language.postfixOps
-import scala.{Either => _, Option => _, Some => _, Stream => _}
+import scala.{ Either => _, Option => _, Some => _, Stream => _ }
 
 class Test11_17 extends WordSpec with Matchers {
   "Id" should {
