@@ -28,7 +28,7 @@ class Test5_02 extends WordSpec with Matchers {
       Stream(1, 2, 3).drop(4) should be(Empty)
     }
 
-    "return an empty stream for an empty stream" in {
+    "return an empty stream when dropping from an empty stream" in {
       Empty.drop(1) should be(Empty)
     }
 
@@ -56,7 +56,7 @@ class Test5_02 extends WordSpec with Matchers {
       Stream(1, 2, 3).take(0) should be(Empty)
     }
 
-    "return an empty stream for an empty stream" in {
+    "return an empty stream when taking from an empty stream" in {
       Empty.take(1) should be(Empty)
     }
   }
