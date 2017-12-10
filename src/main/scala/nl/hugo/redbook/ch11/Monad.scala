@@ -39,7 +39,7 @@ trait Monad[M[_]] extends Functor[M] {
 
   // Exercise 11.3
   def sequence[A](lma: List[M[A]]): M[List[A]] =
-    traverse(lma)(x => x)
+    traverse(lma)(x => x)   //traverse(lma)(identity)
 
   // Exercise 11.3
   def traverse[A,B](la: List[A])(f: A => M[B]): M[List[B]] =
@@ -135,6 +135,8 @@ object Monad {
   def readerMonad[R] = new Monad[({type f[x] = Reader[R,x]})#f] {
     def unit[A](a: => A): Reader[R,A] = Reader(_ => a)
     override def flatMap[A,B](st: Reader[R,A])(f: A => Reader[R,B]): Reader[R,B] = flatMap(st)(f)
+    // moet zijn:
+//    Reader(r => f(st.run(r)).run(r))
   }
 }
 
