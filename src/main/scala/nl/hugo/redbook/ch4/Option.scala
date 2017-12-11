@@ -6,24 +6,49 @@ import scala.{ Either => _, Option => _, Some => _ }
 
 sealed trait Option[+A] {
   // Exercise 4.01
-  def map[B](f: A => B): Option[B] = ???
+  def map[B](f: A => B): Option[B] /* =
+    this match {
+      case Some(a) => Some(f(a))
+      case None => None
+    }
+    */
 
   // Exercise 4.01
-  def getOrElse[B >: A](default: => B): B = ???
+  def getOrElse[B >: A](default: => B): B /* =
+    this match {
+      case Some(a) => a
+      case None => default
+    }
+    */
 
   // Exercise 4.01
-  def flatMap[B](f: A => Option[B]): Option[B] = ???
+  def flatMap[B](f: A => Option[B]): Option[B] =
+    map(f).getOrElse(None)
 
   // Exercise 4.01
-  def orElse[B >: A](ob: => Option[B]): Option[B] = ???
+  def orElse[B >: A](ob: => Option[B]): Option[B] =
+    map(Some(_)).getOrElse(ob)
 
   // Exercise 4.01
-  def filter(f: A => Boolean): Option[A] = ???
+  def filter(f: A => Boolean): Option[A] =
+    filter_1(f)
+
+  def filter_1(f: A => Boolean): Option[A] =
+    if (map(f).getOrElse(false)) this else None
+
+  def filter_2(f: A => Boolean): Option[A] =
+    flatMap(a => if (f(a)) Some(a) else None)
 }
 
-case class Some[+A](get: A) extends Option[A]
+case class Some[+A](get: A) extends Option[A] {
+  override def map[B](f: A => B): Option[B] = Some(f(get))
+  override def getOrElse[B >: A](default: => B): B = get
+}
 
-case object None extends Option[Nothing]
+case object None extends Option[Nothing] {
+  override def map[B](f: Nothing => B): Option[B] = None
+  override def getOrElse[B >: Nothing](default: => B): B = default
+}
 
 object Option {
   def failingFn(i: Int): Int = {
@@ -50,18 +75,70 @@ object Option {
     else Some(xs.sum / xs.length)
 
   // Exercise 4.02
-  def variance(xs: Seq[Double]): Option[Double] = ???
+  def variance(xs: Seq[Double]): Option[Double] =
+    variance_1(xs)
+
+  def variance_1(xs: Seq[Double]): Option[Double] =
+    mean(xs).flatMap { m =>
+      mean(xs.map(x => math.pow(x - m, 2)))
+    }
+
+  def variance_2(xs: Seq[Double]): Option[Double] =
+    for {
+      m <- mean(xs)
+      v <- mean(xs.map(x => math.pow(x - m, 2)))
+    } yield v
 
   // Exercise 4.03
-  def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = ???
+  def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
+    map2_1(a, b)(f)
+
+  def map2_1[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
+    a.flatMap(aa => b.map(bb => f(aa, bb)))
+
+  def map2_2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
+    for {
+      aa <- a
+      bb <- b
+    } yield f(aa, bb)
+
+  def map2_3[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
+    (a, b) match {
+      case (Some(aa), Some(bb)) => Some(f(aa, bb))
+      case _ => None
+    }
 
   // Exercise 4.04
-  def sequence[A](a: List[Option[A]]): Option[List[A]] = ???
+  def sequence[A](as: List[Option[A]]): Option[List[A]] =
+    sequence_1(as)
+
+  def sequence_1[A](as: List[Option[A]]): Option[List[A]] =
+    as.foldRight[Option[List[A]]](Some(Nil))((x, xs) => map2(x, xs)(_ :: _))
+
+  def sequence_2[A](as: List[Option[A]]): Option[List[A]] =
+    as match {
+      case Nil => Some(Nil)
+      case a :: tail => map2(a, sequence_2(tail))(_ :: _)
+    }
+
+  // TODO: write more efficient solution with short circuit
 
   // Exercise 4.05
-  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = ???
+  def traverse[A, B](as: List[A])(f: A => Option[B]): Option[List[B]] =
+    traverse_1(as)(f)
+
+  def traverse_1[A, B](as: List[A])(f: A => Option[B]): Option[List[B]] =
+    as.foldRight[Option[List[B]]](Some(Nil))((x, xs) => map2(f(x), xs)(_ :: _))
+
+  def traverse_2[A, B](as: List[A])(f: A => Option[B]): Option[List[B]] =
+    as match {
+      case Nil => Some(Nil)
+      case a :: tail => map2(f(a), traverse(tail)(f))(_ :: _)
+    }
+
+  // TODO: write more efficient solution with short circuit
 
   // Exercise 4.05
-  def sequence_via_traverse[A](a: List[Option[A]]): Option[List[A]] = ???
-
+  def sequence_via_traverse[A](as: List[Option[A]]): Option[List[A]] =
+    traverse(as)(identity)
 }

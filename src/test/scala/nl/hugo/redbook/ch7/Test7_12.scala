@@ -32,7 +32,7 @@ class Test7_12 extends WordSpec with Matchers with TimeLimitedTests {
 
           es.completedTaskCount should be(0)
 
-          Par.run(es)(candidate).get should be(item)
+          Par.run(es)(candidate) should be(item)
 
           es.completedTaskCount should be > 0L
 

@@ -1,6 +1,7 @@
 package nl.hugo.redbook.ch10
 
 import org.scalatest.{ Matchers, WordSpec }
+import nl.hugo.redbook.ch3.Tree
 
 class Test10_15 extends WordSpec with Matchers with FoldableBehaviours {
 
@@ -34,4 +35,3 @@ class Test10_15 extends WordSpec with Matchers with FoldableBehaviours {
     behave like anOptionToList(of)
   }
 }
-

@@ -32,7 +32,7 @@ class Test7_03 extends WordSpec with Matchers with TimeLimitedTests {
     val combinedPar = map2WhileRespectingContracts(longRunningPar("FOO"), longRunningPar("BAR"))(_ + _)
 
     "timeout on a get on a long running computation" in {
-      val combinedFuture = Par.run(es)(combinedPar)
+      val combinedFuture = combinedPar(es)
 
       combinedFuture.isDone should be(false)
       combinedFuture.isCancelled should be(false)
@@ -47,7 +47,7 @@ class Test7_03 extends WordSpec with Matchers with TimeLimitedTests {
     "complete the computation on short running computations" in {
       val combinedShortPars = map2WhileRespectingContracts(Par.unit("FOO"), Par.unit("BAR"))(_ + _)
 
-      val combinedShortFutures = Par.run(es)(combinedShortPars)
+      val combinedShortFutures = combinedShortPars(es)
 
       combinedShortFutures.isDone should be(false)
       combinedShortFutures.isCancelled should be(false)
@@ -60,7 +60,7 @@ class Test7_03 extends WordSpec with Matchers with TimeLimitedTests {
 
     // This concern is an optional test, not part of the exercise. Feel free to ignore.
     "interrupt the computation on cancel" in {
-      val combinedFuture = Par.run(es)(combinedPar)
+      val combinedFuture = combinedPar(es)
 
       combinedFuture.isDone should be(false)
       combinedFuture.isCancelled should be(false)

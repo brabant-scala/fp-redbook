@@ -1,10 +1,6 @@
 package nl.hugo.redbook.ch11
 
-import nl.hugo.redbook.ch4.{None, Option, Some}
-import org.scalatest.{Matchers, WordSpec}
-
-import scala.language.postfixOps
-import scala.{Either => _, Option => _, Some => _, Stream => _}
+import org.scalatest.{ Matchers, WordSpec }
 
 class Test11_08 extends WordSpec with Matchers {
   "Monad.OptionMonad" should {

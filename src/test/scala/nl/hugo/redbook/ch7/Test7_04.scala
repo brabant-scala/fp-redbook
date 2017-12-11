@@ -28,7 +28,7 @@ class Test7_04 extends WordSpec with Matchers with TimeLimitedTests {
 
       es.completedTaskCount should be(0)
 
-      Par.run(es)(par).get should be(f(10))
+      Par.run(es)(par) should be(f(10))
 
       es.completedTaskCount should be > 0L
     }

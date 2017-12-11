@@ -72,7 +72,7 @@ class Test8_09 extends WordSpec with Matchers with BeforeAndAfterEach {
     }
 
     "fail when both props fail" in {
-      (failingProp || failingProp).run(0, 1, rng) should be(Prop.Falsified("foo", 0))
+      (failingProp || failingProp).run(0, 1, rng) should be(Prop.Falsified("foo\nfoo", 0))
       passingPropCount should be(0)
       failingPropCount should be(2)
     }

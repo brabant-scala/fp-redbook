@@ -28,7 +28,7 @@ class Test7_05 extends WordSpec with Matchers with TimeLimitedTests {
 
       es.completedTaskCount should be(0)
 
-      assert(Par.run(es)(Par.sequence(l)).get == List("First", "Second", "Third"))
+      assert(Par.run(es)(Par.sequence(l)) == List("First", "Second", "Third"))
 
       es.completedTaskCount should be > 0L
     }

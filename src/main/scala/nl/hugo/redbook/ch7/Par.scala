@@ -1,104 +1,239 @@
 package nl.hugo.redbook.ch7
 
 import java.util.concurrent._
-import language.implicitConversions
+import java.util.concurrent.atomic.AtomicBoolean
 
 object Par {
+
   type Par[A] = ExecutorService => Future[A]
 
-  def run[A](s: ExecutorService)(a: Par[A]): Future[A] = a(s)
+  // listing 7.6 - blocking implementation
+  def run[A](s: ExecutorService)(a: Par[A]): A =
+    a(s).get
 
-  def unit[A](a: A): Par[A] = (es: ExecutorService) => UnitFuture(a) // `unit` is represented as a function that returns a `UnitFuture`, which is a simple implementation of `Future` that just wraps a constant value. It doesn't use the `ExecutorService` at all. It's always done and can't be cancelled. Its `get` method simply returns the value that we gave it.
+  // listing 7.5
+  def unit[A](a: A): Par[A] =
+    _ => UnitFuture(a)
 
+  // listing 7.5
   private case class UnitFuture[A](get: A) extends Future[A] {
     def isDone = true
-    def get(timeout: Long, units: TimeUnit): A = get
+    def get(timeout: Long, units: TimeUnit) = get
     def isCancelled = false
     def cancel(evenIfRunning: Boolean): Boolean = false
   }
 
-  def map2[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = // `map2` doesn't evaluate the call to `f` in a separate logical thread, in accord with our design choice of having `fork` be the sole function in the API for controlling parallelism. We can always do `fork(map2(a,b)(f))` if we want the evaluation of `f` to occur in a separate thread.
-    (es: ExecutorService) => {
-      val af = a(es)
-      val bf = b(es)
-      UnitFuture(f(af.get, bf.get)) // This implementation of `map2` does _not_ respect timeouts, and eagerly waits for the returned futures. This means that even if you have passed in "forked" arguments, using this map2 on them will make them wait. It simply passes the `ExecutorService` on to both `Par` values, waits for the results of the Futures `af` and `bf`, applies `f` to them, and wraps them in a `UnitFuture`. In order to respect timeouts, we'd need a new `Future` implementation that records the amount of time spent evaluating `af`, then subtracts that time from the available time allocated for evaluating `bf`.
+  // listing 7.5
+  def fork[A](p: => Par[A]): Par[A] =
+    es => es.submit(
+      new Callable[A] {
+        def call = p(es).get
+      }
+    )
+
+  // from listing 7.4
+  def lazyUnit[A](a: => A): Par[A] =
+    fork(unit(a))
+
+  // listing 7.5
+  def map2[A, B, C](pa: Par[A], pb: Par[B])(f: (A, B) => C): Par[C] =
+    es => {
+      val af = pa(es)
+      val bf = pb(es)
+      UnitFuture(f(af.get, bf.get)) // does not respect timeouts
     }
 
-  def fork[A](a: => Par[A]): Par[A] = // This is the simplest and most natural implementation of `fork`, but there are some problems with it--for one, the outer `Callable` will block waiting for the "inner" task to complete. Since this blocking occupies a thread in our thread pool, or whatever resource backs the `ExecutorService`, this implies that we're losing out on some potential parallelism. Essentially, we're using two threads when one should suffice. This is a symptom of a more serious problem with the implementation, and we will discuss this later in the chapter.
-    es => es.submit(new Callable[A] {
-      def call: A = a(es).get
-    })
+  // exercise 7.3
+  def map2WhileRespectingContracts[A, B, C](pa: Par[A], pb: Par[B])(f: (A, B) => C): Par[C] =
+    es => new Future[C] {
+      private val fa = pa(es)
+      private val fb = pb(es)
+      private var value: Option[C] = None
+      def isDone = value.isDefined
+      def get = eval(f(fa.get, fb.get))
+      def get(timeout: Long, units: TimeUnit): C = {
+        val start = System.currentTimeMillis
+        val a = fa.get(timeout, units)
+        val elapsed = System.currentTimeMillis - start
+        val left = units.convert(timeout, TimeUnit.MILLISECONDS) - elapsed
+        val b = checked(fb.get(left, TimeUnit.MILLISECONDS))
+        eval(f(a, b)) // TODO: timeout if f takes too long
+      }
+      def isCancelled = fa.isCancelled || fb.isCancelled()
+      def cancel(evenIfRunning: Boolean) =
+        fa.cancel(evenIfRunning) & fb.cancel(evenIfRunning) // single & => no short-circuit
+      private def eval(calc: => C): C =
+        value match {
+          case Some(c) => c
+          case None =>
+            val c = calc
+            value = Some(c)
+            c
+        }
+      private def checked[A](a: => A): A =
+        if (isCancelled) throw new CancellationException
+        else a
+    }
 
+  // section 7.3
   def map[A, B](pa: Par[A])(f: A => B): Par[B] =
     map2(pa, unit(()))((a, _) => f(a))
 
-  def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
+  // section 7.3
+  def parMap[A, B](as: List[A])(f: A => B): Par[List[B]] =
+    fork {
+      val bs: List[Par[B]] = as.map(asyncF(f))
+      sequence_1(bs) // TODO: calling sequence() uses (too) many threads
+    }
 
-  // Exercise 7.03
-  def map2WhileRespectingContracts[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = ???
+  // section 7.3
+  def sortPar(parList: Par[List[Int]]): Par[List[Int]] =
+    map(parList)(_.sorted)
 
-  // Exercise 7.04
-  def asyncF[A, B](f: A => B): A => Par[B] = ???
-
-  // Exercise 7.05
-  def sequence[A](ps: List[Par[A]]): Par[List[A]] = ???
-
-  def parMap[A, B](ps: List[A])(f: A => B): Par[List[B]] = fork {
-    var fbs: List[Par[B]] = ps.map(asyncF(f))
-    sequence(fbs)
-  }
-
-  // Exercise 7.06
-  def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = ???
-
-  def sortPar(parList: Par[List[Int]]): Par[List[Int]] = map(parList)(_.sorted)
-
+  // section 7.4.1
   def equal[A](e: ExecutorService)(p: Par[A], p2: Par[A]): Boolean =
     p(e).get == p2(e).get
 
+  // from section 7.4.3
   def delay[A](fa: => Par[A]): Par[A] =
     es => fa(es)
 
+  // from section 7.5
   def choice[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
     es =>
-      if (run(es)(cond).get) t(es) // Notice we are blocking on the result of `cond`.
+      if (run(es)(cond)) t(es) // blocking on cond!
       else f(es)
 
-  // Exercise 7.11
-  def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = ???
-
-  // Exercise 7.11
-  def choiceViaChoiceN[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = ???
-
-  // Exercise 7.12
-  def choiceMap[K, V](key: Par[K])(choices: Map[K, Par[V]]): Par[V] = ???
-
-  // Exercise 7.13
-  def chooser[A, B](pa: Par[A])(choices: A => Par[B]): Par[B] = ???
-
-  // Exercise 7.13
-  def choiceViaChooser[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = ???
-
-  // Exercise 7.13
-  def choiceNViaChooser[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = ???
-
-  def flatMap[A, B](p: Par[A])(f: A => Par[B]): Par[B] = chooser(p)(f)
-
-  // Exercise 7.14
-  def join[A](p: Par[Par[A]]): Par[A] = ???
-
-  // Exercise 7.14
-  def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] = ???
-
-  // Exercise 7.14
-  def flatMapViaJoin[A, B](p: Par[A])(f: A => Par[B]): Par[B] = ???
-
-  /* Gives us infix syntax for `Par`. */
-  implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
-
-  class ParOps[A](p: Par[A]) {
-
+  /** Provides infix syntax for Par. */
+  implicit class ParOps[A](val p: Par[A]) extends AnyVal {
+    def map[B](f: A => B): Par[B] = Par.map(p)(f)
+    def flatMap[B](f: A => Par[B]): Par[B] = Par.flatMap(p)(f)
   }
+
+  // Exercises
+
+  // exercise 7.4
+  def asyncF[A, B](f: A => B): A => Par[B] =
+    a => lazyUnit(f(a))
+
+  // exercise 7.5
+  def sequence[A](l: List[Par[A]]): Par[List[A]] =
+    sequence_1(l)
+
+  // exercise 7.5 - linear, sequential
+  def sequence_1[A](l: List[Par[A]]): Par[List[A]] =
+    l.foldRight(unit(List.empty[A])) { (p, ps) =>
+      map2(p, ps)(_ :: _)
+    }
+
+  // exercise 7.5 - binary, parallel
+  def sequence_2[A](l: List[Par[A]]): Par[List[A]] = {
+
+    def go(ps: IndexedSeq[Par[A]]): Par[IndexedSeq[A]] =
+      ps match {
+        case IndexedSeq() => unit(Vector.empty[A])
+        case IndexedSeq(a) => map(a)(Vector(_))
+        case _ => fork {
+          val (l, r) = ps.splitAt(ps.size / 2)
+          map2(go(l), go(r))(_ ++ _)
+        }
+      }
+
+    map(go(l.toVector))(_.toList)
+  }
+
+  // TODO: write tests
+  // experiment for section 7.3 (1st bullet)
+  def parReduce[A](as: IndexedSeq[A])(f: (A, A) => A): Par[A] =
+    if (as.length <= 1)
+      unit(as.headOption.getOrElse(throw new Exception("empty.reduce")))
+    else {
+      val (l, r) = as.splitAt(as.length / 2)
+      map2(fork(parReduce(l)(f)), fork(parReduce(r)(f)))(f)
+    }
+
+  // experiment for section 7.3 (1st bullet)
+  def parSum_2(is: IndexedSeq[Int]): Par[Int] =
+    parReduce(is)(_ + _)
+
+  // experiment for section 7.3 (1st bullet)
+  def parMax(is: IndexedSeq[Int]): Par[Int] =
+    parReduce(is)(_ max _)
+
+  // experiment for section 7.3 (3rd bullet)
+  def map3[A, B, C, D](pa: Par[A], pb: Par[B], pc: Par[C])(f: (A, B, C) => D): Par[D] = {
+    val ab = map2(pa, pb)((_, _))
+    map2(ab, pc) { case ((a, b), c) => f(a, b, c) }
+  }
+
+  // experiment for section 7.3 (3rd bullet)
+  def map4[A, B, C, D, E](pa: Par[A], pb: Par[B], pc: Par[C], pd: Par[D])(f: (A, B, C, D) => E): Par[E] = {
+    val ab = map2(pa, pb)((_, _))
+    val cd = map2(pc, pd)((_, _))
+    map2(ab, cd) { case ((a, b), (c, d)) => f(a, b, c, d) }
+  }
+
+  // exercise 7.6
+  def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = {
+    val ps = parMap(as)(a => if (f(a)) Some(a) else None)
+    map(ps)(_.flatten)
+  }
+
+  // exercise 7.11
+  def choiceViaChoiceN[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
+    choiceN(map(cond)(b => if (b) 1 else 0))(List(f, t))
+
+  // exercise 7.13
+  def choiceViaChooser[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
+    chooser(cond)(b => if (b) t else f)
+
+  // exercise 7.13
+  def choiceNViaChooser[A](pn: Par[Int])(choices: List[Par[A]]): Par[A] =
+    chooser(pn)(i => choices(i))
+
+  // exercise 7.13
+  def choiceMapViaChooser[K, V](pk: Par[K])(choices: Map[K, Par[V]]): Par[V] =
+    chooser(pk)(k => choices(k))
+
+  // exercise 7.13
+  def flatMap[A, B](pa: Par[A])(f: A => Par[B]): Par[B] =
+    chooser(pa)(f)
+
+  // exercise 7.11 - fails if (i < 0) || (i >= choice.size)
+  def choiceN[A](pn: Par[Int])(choices: List[Par[A]]): Par[A] =
+    es => {
+      val n = run(es)(pn)
+      choices(n)(es)
+    }
+
+  // exercise 7.12 - fails if key not in choices
+  def choiceMap[K, V](pk: Par[K])(choices: Map[K, Par[V]]): Par[V] =
+    es => {
+      val k = run(es)(pk)
+      choices(k)(es)
+    }
+
+  // exercise 7.13
+  def chooser[A, B](pa: Par[A])(f: A => Par[B]): Par[B] =
+    es => {
+      val a = run(es)(pa)
+      f(a)(es)
+    }
+
+  // exercise 7.14
+  def join[A](ppa: Par[Par[A]]): Par[A] =
+    es => {
+      val ap = run(es)(ppa)
+      ap(es)
+    }
+
+  // exercise 7.14
+  def joinViaFlatMap[A](ppa: Par[Par[A]]): Par[A] =
+    flatMap(ppa)(identity)
+
+  // exercise 7.14
+  def flatMapViaJoin[A, B](pa: Par[A])(f: A => Par[B]): Par[B] =
+    join(map(pa)(f))
 }
 
 object Examples {

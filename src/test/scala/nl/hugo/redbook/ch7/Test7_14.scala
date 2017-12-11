@@ -27,7 +27,7 @@ class Test7_14 extends WordSpec with Matchers with TimeLimitedTests {
 
       es.completedTaskCount should be(0L)
 
-      Par.run(es)(joinedPar).get should be("FOOBAR")
+      Par.run(es)(joinedPar) should be("FOOBAR")
 
       es.completedTaskCount should be > 0L
     }
@@ -44,7 +44,7 @@ class Test7_14 extends WordSpec with Matchers with TimeLimitedTests {
 
       es.completedTaskCount should be(0L)
 
-      Par.run(es)(joinedPar).get should be("FOOBAR")
+      Par.run(es)(joinedPar) should be("FOOBAR")
 
       es.completedTaskCount should be > 1L
     }
@@ -66,7 +66,7 @@ class Test7_14 extends WordSpec with Matchers with TimeLimitedTests {
 
           es.completedTaskCount should be(0L)
 
-          Par.run(es)(candidate).get should be(item)
+          Par.run(es)(candidate) should be(item)
 
           es.completedTaskCount should be > 0L
         }
