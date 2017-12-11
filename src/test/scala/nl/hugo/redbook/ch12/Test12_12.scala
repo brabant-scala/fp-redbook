@@ -4,7 +4,7 @@ import org.scalatest.{Matchers, WordSpec}
 
 import scala.language.postfixOps
 
-class Test12_11 extends WordSpec with Matchers {
+class Test12_12 extends WordSpec with Matchers {
   val optionApplicative = new Applicative[Option] {
     override def unit[A](a: => A): Option[A] = Some(a)
 
