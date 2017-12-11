@@ -2,8 +2,6 @@ package nl.hugo.redbook.ch11
 
 import java.util.concurrent.{ExecutorService, Executors}
 
-import nl.hugo.redbook.ch4.{None, Option, Some}
-import nl.hugo.redbook.ch5.Stream
 import nl.hugo.redbook.ch7.Par
 import nl.hugo.redbook.ch7.Par.Par
 import nl.hugo.redbook.ch9.LocationParser
@@ -14,7 +12,7 @@ import org.scalatest.{Matchers, WordSpec}
 
 import scala.language.postfixOps
 
-import scala.{ Either => _, Option => _, Some => _, Stream => _ }
+import scala.{ Either => _}
 
 class Test11_01 extends WordSpec with Matchers with TimeLimitedTests {
 
