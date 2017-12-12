@@ -40,5 +40,9 @@ class Test11_06 extends WordSpec with Matchers {
       optionMonad.filterM(List(1, 2, 3, 4, 5, 6))(_ => Some(false)) should be(Some(List()))
       optionMonad.filterM(List(1, 2, 3, 4, 5, 6))(x => Some(x % 2 == 0)) should be(Some(List(2, 4, 6)))
     }
+    "filterM" in {
+      Monad.optionMonad.filterM(List(1,2,3))(i => Some(i > 1)) should be(Some(List(2,3)))
+      Monad.optionMonad.filterM(List(1,2,3))(i => None) should be(None)
+    }
   }
 }

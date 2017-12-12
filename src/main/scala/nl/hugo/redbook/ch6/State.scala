@@ -228,4 +228,12 @@ object State {
       m <- get
     } yield (m.coins, m.candies)
   }
+
+  // Section 6.6
+  def get[S]: State[S, S] =
+    State(s => (s, s))
+
+  // Section 6.6
+  def set[S](s: S): State[S, Unit] =
+    State(_ => ((), s))
 }
